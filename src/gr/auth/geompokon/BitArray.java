@@ -1,8 +1,9 @@
 package gr.auth.geompokon;
 
 import java.util.ArrayList;
+import java.util.RandomAccess;
 
-public class BitArray {
+public class BitArray implements RandomAccess {
 
     public static void main(String[] args) {
 
@@ -81,7 +82,7 @@ public class BitArray {
     }
 
     private static final int DEFAULT_SIZE = 512;
-    long[] data, valid;
+    long[] data;
     int elements; // number of entries in the array
 
     ArrayList<Long> reference;
@@ -96,7 +97,6 @@ public class BitArray {
             throw new IllegalArgumentException("Bit array initial size is negative");
         }
         data = new long[initialLength];
-        valid = new long[initialLength];
         // new array, 0 entries so far
         elements = 0;
     }
@@ -154,10 +154,18 @@ public class BitArray {
         return getBitInLong(indexInLong, data[longIndex]);
     }
 
+    /**
+     * Returns the bit in index i (counting left to right) from argument long
+     * @param i  index of the bit
+     * @param l  long housing the bit
+     * @return  integer value of the bit
+     */
     private int getBitInLong(int i, long l) {
 
+        // bitwise & with 1 bit mask to get the desired bit
         long onlySelectedBit = l & bits[i];
 
+        // result of & is zero if-f the bit is zero
         if (onlySelectedBit == 0) {
             return 0;
         } else {
