@@ -13,7 +13,7 @@ public class BitArray implements RandomAccess {
     private static final long[] bits;
 
     static {
-        bits = new long[] {
+        bits = new long[]{
                 Integer.MIN_VALUE,
                 4611686018427387904L,
                 2305843009213693952L,
@@ -85,7 +85,7 @@ public class BitArray implements RandomAccess {
     long[] data;
     int elements; // number of entries in the array
 
-    ArrayList<Long> reference;
+    ArrayList<Long> reference; // cannot call add at index > size
 
 
     public BitArray() {
@@ -124,6 +124,7 @@ public class BitArray implements RandomAccess {
         } else {
             add(0);
         }
+        // add(Boolean.compare(bit, Boolean.FALSE)); true->1, false->0  // y tho
     }
 
     public void add(long bit) {
@@ -131,14 +132,36 @@ public class BitArray implements RandomAccess {
     }
 
     public void add(long bit, int index) {
+        // TODO
+    }
 
+    public void remove(int index) {
+        // TODO
+    }
+
+    public void set(int index, boolean bit) {
+        if (bit) {
+            set(index, 1L);
+        } else {
+            set(index, 0L);
+        }
+    }
+
+    public void set(int index, long bit) {
+        if (index == elements) {
+            add(bit);
+        } else {
+
+            // TODO
+        }
     }
 
     /**
      * Returns the bit value from the selected index
-     * @param index  index of the bit in the array
-     * @return  0 or 1 corresponding to the bit value
-     * @throws IndexOutOfBoundsException  if index is negative or ge to number of elements
+     *
+     * @param index index of the bit in the array
+     * @return 0 or 1 corresponding to the bit value
+     * @throws IndexOutOfBoundsException if index is negative or ge to number of elements
      */
     public int get(int index) {
         // check for index out of bounds
@@ -154,11 +177,20 @@ public class BitArray implements RandomAccess {
         return getBitInLong(indexInLong, data[longIndex]);
     }
 
+    public int size() {
+        return elements;
+    }
+
+    public boolean isEmpty() {
+        return elements == 0;
+    }
+
     /**
      * Returns the bit in index i (counting left to right) from argument long
-     * @param i  index of the bit
-     * @param l  long housing the bit
-     * @return  integer value of the bit
+     *
+     * @param i index of the bit
+     * @param l long housing the bit
+     * @return integer value of the bit
      */
     private int getBitInLong(int i, long l) {
 
