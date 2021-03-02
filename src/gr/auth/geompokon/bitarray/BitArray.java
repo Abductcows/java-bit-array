@@ -1,12 +1,19 @@
-package gr.auth.geompokon;
+package gr.auth.geompokon.bitarray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.RandomAccess;
 
 public class BitArray implements RandomAccess {
 
     public static void main(String[] args) {
 
+        int[] test = new int[2];
+        System.out.println(test.length);
+        test = Arrays.copyOf(test, 2 * test.length);
+        System.out.println(test.length);
+        test = Arrays.copyOf(test, test.length / 2);
+        System.out.println(test.length);
     }
 
     // p2[i] is a long with 1 only in index 63-i (left to right)
@@ -132,7 +139,27 @@ public class BitArray implements RandomAccess {
     }
 
     public void add(long bit, int index) {
-        // TODO
+        // TODO: add at an index other than the last
+
+        if (index != elements) {
+            throw new UnsupportedOperationException("Add at index not yet supported");
+        }
+
+                // check if array is full
+        if ( elements == data.length * 64 ) {
+            extendArray();
+        }
+
+        int longIndex = getLongIndex(index);
+        int indexInLong = getIndexInLong(index);
+
+        if (bit == 0) {
+            data[longIndex] &= ~BitArray.bits[indexInLong];
+        } else {
+            data[longIndex] |= BitArray.bits[indexInLong];
+        }
+
+        elements++;
     }
 
     public void remove(int index) {
@@ -151,7 +178,7 @@ public class BitArray implements RandomAccess {
         if (index == elements) {
             add(bit);
         } else {
-
+            throw new UnsupportedOperationException("Set not yet supported");
             // TODO
         }
     }
@@ -205,5 +232,8 @@ public class BitArray implements RandomAccess {
         }
     }
 
+    private void extendArray() {
+        data = Arrays.copyOf(data, 2 * data.length);
+    }
 
 }
