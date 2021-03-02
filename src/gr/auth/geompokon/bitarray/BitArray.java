@@ -8,8 +8,7 @@ public class BitArray implements RandomAccess {
 
 
     public static void main(String[] args) {
-        System.out.println(Long.toBinaryString(-1));
-        System.out.println(Long.parseUnsignedLong("1111111111111111111111111111111111111111111111111111111111111111", 2));
+        System.out.println(~0L);
     }
 
     // p2[i] is a long with 1 only in index 63-i (left to right)
@@ -85,7 +84,7 @@ public class BitArray implements RandomAccess {
     }
 
     private static final int DEFAULT_SIZE = 512;
-    private static final int BITS_PER_LONG = 63;
+    private static final int BITS_PER_LONG = 64;
     long[] data;
     int elements; // number of entries in the array
 
@@ -118,7 +117,7 @@ public class BitArray implements RandomAccess {
     }
 
     public int getIndexInLong(int bitIndex) {
-        return bitIndex % BITS_PER_LONG + 1;
+        return bitIndex % BITS_PER_LONG;
     }
 
     public void add(boolean bit, int index) {
@@ -175,28 +174,31 @@ public class BitArray implements RandomAccess {
 
         int LSB = moveAndInsertInLong(bit, longIndex, indexInLong);
         while (LSB != -1) {
-            LSB = moveAndInsertInLong(LSB, ++longIndex, 1);
+            LSB = moveAndInsertInLong(LSB, ++longIndex, 0);
         }
     }
 
     private int moveAndInsertInLong(int previousBit, int longIndex, int indexInLong) {
-        // get bits from index to LSB
-        long rightSide = data[longIndex] & (bits[indexInLong] - 1);
+        // get selection mask covering index and every bit to the right
+        long selectionMask = indexInLong == 0? -1 : (bits[indexInLong-1] - 1);
+        // isolate the value under the mask
+        long rightSide = data[longIndex] & selectionMask;
         // save lsb
         long LSB = rightSide & 1L;
-        // shift right to the right
+        // unsigned shift to the right
         rightSide >>>= 1;
         // clear the right side bits from data and add the new ones
-        data[longIndex] &= -bits[indexInLong]; // clear
-        data[longIndex] += rightSide;
+        data[longIndex] &= ~selectionMask; // clear
+        data[longIndex] += rightSide; // shifted bits appended
         // set the new bit to 1 or leave it at 0
         if (previousBit == 1) {
             data[longIndex] |= bits[indexInLong];
         }
-
+        // check if LSB was not a value of the array
         if (elements + 1 < (longIndex+1) * 63) {
             return -1;
         }
+        // else return it for next iteration
         return (int) LSB;
     }
 
