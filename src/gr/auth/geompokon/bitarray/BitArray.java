@@ -89,8 +89,11 @@ public class BitArray implements RandomAccess {
     }
 
     private static final int DEFAULT_SIZE = 512;
+    private static final int BITS_PER_LONG = 63;
     long[] data;
     int elements; // number of entries in the array
+
+    private boolean autoShrink;
 
     ArrayList<Long> reference; // cannot call add at index > size
 
@@ -100,21 +103,26 @@ public class BitArray implements RandomAccess {
     }
 
     public BitArray(int initialLength) {
+        this(initialLength, false);
+    }
+
+    public BitArray(int initialLength, boolean autoShrink) {
         if (initialLength < 0) {
             throw new IllegalArgumentException("Bit array initial size is negative");
         }
         data = new long[initialLength];
+        this.autoShrink = autoShrink;
         // new array, 0 entries so far
         elements = 0;
     }
 
     // todo: inline this?
     private int getLongIndex(int bitIndex) {
-        return bitIndex / 63;
+        return bitIndex / BITS_PER_LONG;
     }
 
     public int getIndexInLong(int bitIndex) {
-        return bitIndex % 63 + 1;
+        return bitIndex % BITS_PER_LONG + 1;
     }
 
     public void add(boolean bit, int index) {
@@ -146,7 +154,7 @@ public class BitArray implements RandomAccess {
         }
 
                 // check if array is full
-        if ( elements == data.length * 63 ) {
+        if ( elements == data.length * BITS_PER_LONG ) {
             extendArray();
         }
 
@@ -164,6 +172,16 @@ public class BitArray implements RandomAccess {
 
     public void remove(int index) {
         // TODO
+
+
+
+        // update number of elements
+        // --
+
+        // shrink array if autoshrink is enabled
+        if (autoShrink && 2 * elements < data.length * BITS_PER_LONG) {
+            shrinkArray();
+        }
     }
 
     public void set(int index, boolean bit) {
@@ -234,6 +252,10 @@ public class BitArray implements RandomAccess {
 
     private void extendArray() {
         data = Arrays.copyOf(data, 2 * data.length);
+    }
+
+    private void shrinkArray() {
+        data = Arrays.copyOf(data, data.length / 2);
     }
 
 }
