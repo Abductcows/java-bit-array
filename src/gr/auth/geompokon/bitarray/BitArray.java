@@ -86,8 +86,8 @@ public class BitArray implements RandomAccess {
 
     private static final int DEFAULT_SIZE = 512;
     private static final int BITS_PER_LONG = 64;
-    long[] data;
-    int elements; // number of entries in the array
+    private long[] data;
+    private int elements; // number of entries in the array
 
     private boolean autoShrink;
 
@@ -123,15 +123,15 @@ public class BitArray implements RandomAccess {
 
     public void add(boolean bit) {
         if (bit) {
-            append(1);
+            add(elements, 1);
         } else {
-            append(0);
+            add(elements, 0);
         }
         // add(Boolean.compare(bit, Boolean.FALSE)); true->1, false->0  // y tho
     }
 
     public void add(int bit) {
-        append(bit);
+        add(elements, bit);
     }
 
     public void add(int index, boolean bit) {
