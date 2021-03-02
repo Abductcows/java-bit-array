@@ -48,12 +48,32 @@ class BitArrayTest {
         for (int i=0; i<TEST_SIZE; i++) {
             int nextBit = random.nextInt(2); // exclusive
             cachedInsertions.push(nextBit);
-            array.add(nextBit, 0);
+            array.add(0, nextBit);
         }
 
         // check data integrity
         for (int i=0; i<TEST_SIZE; i++) {
             assertEquals(cachedInsertions.pop(), array.get(i));
+        }
+    }
+
+    @Test
+    void testSet() {
+        final int TEST_SIZE = 9000;
+        Random random = new Random();
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            int nextBit = random.nextInt(2); // exclusive
+            array.add(0, nextBit);
+        }
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            // get the current bit
+            int currentBit = array.get(i);
+            // set the current bit to its opposite and check if it has been set
+            array.set(i, (Math.abs(currentBit-1)));
+
+            assertEquals(1, currentBit + array.get(i));
         }
     }
 
