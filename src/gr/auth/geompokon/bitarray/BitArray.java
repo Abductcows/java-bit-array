@@ -6,14 +6,9 @@ import java.util.RandomAccess;
 
 public class BitArray implements RandomAccess {
 
+
     public static void main(String[] args) {
 
-        int[] test = new int[2];
-        System.out.println(test.length);
-        test = Arrays.copyOf(test, 2 * test.length);
-        System.out.println(test.length);
-        test = Arrays.copyOf(test, test.length / 2);
-        System.out.println(test.length);
     }
 
     // p2[i] is a long with 1 only in index 63-i (left to right)
@@ -21,7 +16,7 @@ public class BitArray implements RandomAccess {
 
     static {
         bits = new long[]{
-                Integer.MIN_VALUE,
+                Long.MIN_VALUE,
                 4611686018427387904L,
                 2305843009213693952L,
                 1152921504606846976L,
@@ -142,41 +137,74 @@ public class BitArray implements RandomAccess {
         // add(Boolean.compare(bit, Boolean.FALSE)); true->1, false->0  // y tho
     }
 
-    public void add(long bit) {
+    public void add(int bit) {
         add(bit, elements);
     }
 
-    public void add(long bit, int index) {
-        // TODO: add at an index other than the last
-
-        if (index != elements) {
-            throw new UnsupportedOperationException("Add at index not yet supported");
-        }
-
-                // check if array is full
-        if ( elements == data.length * BITS_PER_LONG ) {
+    public void add(int bit, int index) {
+        // check if array is full
+        if (elements == data.length * BITS_PER_LONG) {
             extendArray();
         }
 
+        // check for append or non-appending insert
+        if (index == elements) {
+            append(bit);
+        } else {
+            insertAtIndex(bit, index);
+        }
+
+        elements = elements + 1;
+    }
+
+    private void append(int bit) {
+        int longIndex = getLongIndex(elements);
+        int indexInLong = getIndexInLong(elements);
+
+        if (bit == 0) {
+            data[longIndex] &= ~bits[indexInLong];
+        } else {
+            data[longIndex] |= bits[indexInLong];
+        }
+    }
+
+    private void insertAtIndex(int bit, int index) {
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
 
-        if (bit == 0) {
-            data[longIndex] &= ~BitArray.bits[indexInLong];
-        } else {
-            data[longIndex] |= BitArray.bits[indexInLong];
+        int LSB = moveAndInsertInLong(bit, longIndex, indexInLong);
+        while (LSB != -1) {
+            LSB = moveAndInsertInLong(LSB, ++longIndex, 1);
+        }
+    }
+
+    private int moveAndInsertInLong(int previousBit, int longIndex, int indexInLong) {
+        // get bits from index to LSB
+        long rightSide = data[longIndex] & (bits[indexInLong] - 1);
+        // save lsb
+        long LSB = rightSide & 1L;
+        // shift right to the right
+        rightSide >>>= 1;
+        // clear the right side bits from data and add the new ones
+        data[longIndex] &= -bits[indexInLong]; // clear
+        data[longIndex] += rightSide;
+        // set the new bit to 1 or leave it at 0
+        if (previousBit == 1) {
+            data[longIndex] |= bits[indexInLong];
         }
 
-        elements++;
+        if (elements + 1 < (longIndex+1) * 63) {
+            return -1;
+        }
+        return (int) LSB;
     }
 
     public void remove(int index) {
         // TODO
 
 
-
         // update number of elements
-        // --
+        elements = elements - 1;
 
         // shrink array if autoshrink is enabled
         if (autoShrink && 2 * elements < data.length * BITS_PER_LONG) {
@@ -186,13 +214,13 @@ public class BitArray implements RandomAccess {
 
     public void set(int index, boolean bit) {
         if (bit) {
-            set(index, 1L);
+            set(index, 1);
         } else {
-            set(index, 0L);
+            set(index, 0);
         }
     }
 
-    public void set(int index, long bit) {
+    public void set(int index, int bit) {
         if (index == elements) {
             add(bit);
         } else {
