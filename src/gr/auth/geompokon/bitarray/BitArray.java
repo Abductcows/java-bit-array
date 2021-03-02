@@ -110,11 +110,11 @@ public class BitArray implements RandomAccess {
 
     // todo: inline this?
     private int getLongIndex(int bitIndex) {
-        return bitIndex / 64;
+        return bitIndex / 63;
     }
 
     public int getIndexInLong(int bitIndex) {
-        return bitIndex % 64;
+        return bitIndex % 63 + 1;
     }
 
     public void add(boolean bit, int index) {
@@ -146,7 +146,7 @@ public class BitArray implements RandomAccess {
         }
 
                 // check if array is full
-        if ( elements == data.length * 64 ) {
+        if ( elements == data.length * 63 ) {
             extendArray();
         }
 

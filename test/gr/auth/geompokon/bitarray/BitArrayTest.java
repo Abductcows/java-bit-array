@@ -33,7 +33,6 @@ class BitArrayTest {
 
         // check data integrity
         for (int i=0; i<TEST_SIZE; i++) {
-            System.out.println(i);
             assertEquals(cachedInsertions[i], array.get(i));
         }
     }
