@@ -8,7 +8,8 @@ public class BitArray implements RandomAccess {
 
 
     public static void main(String[] args) {
-
+        System.out.println(Long.toBinaryString(-1));
+        System.out.println(Long.parseUnsignedLong("1111111111111111111111111111111111111111111111111111111111111111", 2));
     }
 
     // p2[i] is a long with 1 only in index 63-i (left to right)
