@@ -112,7 +112,6 @@ public class BitArray implements RandomAccess {
         elements = 0;
     }
 
-    // todo: inline this?
     private int getLongIndex(int bitIndex) {
         return bitIndex / BITS_PER_LONG;
     }
@@ -163,6 +162,14 @@ public class BitArray implements RandomAccess {
         elements = elements + 1;
     }
 
+    public void set(int index) {
+        set(index, 1);
+    }
+
+    public void clear(int index) {
+        set(index, 0);
+    }
+
     public void set(int index, boolean bit) {
         if (bit) {
             set(index, 1);
@@ -202,7 +209,7 @@ public class BitArray implements RandomAccess {
         // get index of the long housing the bit
         int longIndex = getLongIndex(index);
         // get index of the bit inside the long
-        int indexInLong = getIndexInLong(index); // todo: change this from modulo to subtraction?
+        int indexInLong = getIndexInLong(index);
 
         // return the value of the bit in the long
         return getBitInLong(indexInLong, data[longIndex]);
@@ -217,15 +224,24 @@ public class BitArray implements RandomAccess {
     }
 
     public void remove(int index) {
-        // TODO: do it
-        if (index >= 0)
-            throw new UnsupportedOperationException("remove not yet implemented");
+
+        if (index < 0 || index >= elements) {
+            throw new IndexOutOfBoundsException("Bit array index out of bounds");
+        }
+
+        if (index < elements - 1) { // no shift required for deleting last element
+
+            // remove element and shift every bit to its right to the left
+            // TODO: do it
+            if (index >= 0)
+                throw new UnsupportedOperationException("remove not yet implemented");
+        }
 
         // update number of elements
         elements = elements - 1;
 
         // shrink array if autoshrink is enabled
-        if (autoShrink && 2 * elements < data.length * BITS_PER_LONG) {
+        if (autoShrink && elements < data.length / 2 * BITS_PER_LONG) {
             shrinkArray();
         }
     }
