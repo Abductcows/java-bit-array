@@ -8,7 +8,10 @@ public class BitArray implements RandomAccess {
 
 
     public static void main(String[] args) {
-        System.out.println(~0L);
+        BitArray b = new BitArray();
+
+        System.out.println(b.getSelectionLeftExclusive(0, -1));
+        System.out.println(b.getSelectionRightInclusive(0, -1));
     }
 
     // p2[i] is a long with 1 only in index i (left to right)
@@ -17,8 +20,8 @@ public class BitArray implements RandomAccess {
 
     static {
         bits = new long[]{
-                Long.MIN_VALUE,
-                4611686018427387904L, // 2^62
+                Long.MIN_VALUE, // 0b100...0
+                4611686018427387904L, // 2^62, 0b0100...0
                 2305843009213693952L, // 2^61
                 1152921504606846976L, // ...
                 576460752303423488L,
@@ -219,22 +222,45 @@ public class BitArray implements RandomAccess {
         return get(index) == 1;
     }
 
-    public void remove() {
-        remove(elements - 1);
+    public int remove() {
+        return remove(elements - 1);
     }
 
-    public void remove(int index) {
+    public boolean removeBool() {
+        return remove(elements - 1) == 1;
+    }
+
+    public boolean removeBool(int index) {
+        return remove(index) == 1;
+    }
+
+    public int remove(int index) {
 
         if (index < 0 || index >= elements) {
             throw new IndexOutOfBoundsException("Bit array index out of bounds");
         }
 
+        int bitToRemove;
+
         if (index < elements - 1) { // no shift required for deleting last element
 
             // remove element and shift every bit to its right to the left
             // TODO: do it
-            if (index >= 0)
-                throw new UnsupportedOperationException("remove not yet implemented");
+
+            int longIndex = getLongIndex(index);
+            int indexInLong = getIndexInLong(index);
+            bitToRemove = getBitInLong(indexInLong, data[longIndex]);
+
+            int currentLongIndex = getLongIndex(elements-1); // index of last element prior to removal
+
+            int MSB = -1;
+            while (currentLongIndex > longIndex) {
+                MSB = removeShift(MSB, currentLongIndex, 0);
+                currentLongIndex--;
+            }
+            removeShift(MSB, longIndex, indexInLong);
+        } else {
+            bitToRemove = getBitInLong(getIndexInLong(elements-1), data[getLongIndex(elements-1)]);
         }
 
         // update number of elements
@@ -244,6 +270,7 @@ public class BitArray implements RandomAccess {
         if (autoShrink && elements < data.length / 2 * BITS_PER_LONG) {
             shrinkArray();
         }
+        return bitToRemove;
     }
 
     public int size() {
@@ -277,9 +304,24 @@ public class BitArray implements RandomAccess {
         }
     }
 
+    private int removeShift(int previousBit, int longIndex, int indexInLong) {
+        int newLSB = getBitInLong(indexInLong, data[longIndex]);
+        setBit(0, longIndex, indexInLong);
+
+        long theLong = data[longIndex];
+        long leftPart = getSelectionLeftExclusive(indexInLong, theLong);
+        long rightPart = getSelectionRightInclusive(indexInLong, theLong) << 1;
+        data[indexInLong] = leftPart + rightPart;
+
+        if (previousBit >= 0) {
+            setBit(previousBit, longIndex, BITS_PER_LONG-1);
+        }
+        return newLSB;
+    }
+
     private int moveAndInsertInLong(int previousBit, int longIndex, int indexInLong) {
         // get selection mask covering index and every bit to the right
-        long selectionMask = indexInLong == 0 ? -1 : (bits[indexInLong - 1] - 1);
+        long selectionMask = getSelectionMask(indexInLong);
         // isolate the value under the mask
         long rightSide = data[longIndex] & selectionMask;
         // save lsb
@@ -319,6 +361,20 @@ public class BitArray implements RandomAccess {
         } else {
             return 1;
         }
+    }
+
+    private long getSelectionMask(int index) {
+        return index == 0 ?
+            -1 :
+            bits[index - 1] - 1;
+    }
+
+    private long getSelectionLeftExclusive(int index, long theLong) {
+        return theLong & (~getSelectionMask(index));
+    }
+
+    private long getSelectionRightInclusive(int index, long theLong) {
+        return theLong & getSelectionMask(index);
     }
 
     private void extendArray() {

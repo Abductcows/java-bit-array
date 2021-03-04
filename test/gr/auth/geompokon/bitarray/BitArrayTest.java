@@ -3,6 +3,7 @@ package gr.auth.geompokon.bitarray;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Stack;
 
@@ -101,6 +102,49 @@ class BitArrayTest {
         int lesserSize = TEST_SIZE / 2;
         array.resize(lesserSize);
         assertEquals(lesserSize, array.size()); // size should be truncated
+    }
+
+    @Test
+    void testPopRemove() {
+
+        int TEST_SIZE = 9000;
+
+        ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            boolean nextBit = random.nextBoolean();
+            array.add(nextBit);
+            cache.add(nextBit);
+        }
+        assertEquals(cache.size(), array.size());
+
+        while (!array.isEmpty()) {
+            boolean popValue = array.removeBool();
+            boolean cacheValue = cache.remove(cache.size()-1);
+            assertEquals(cacheValue, popValue);
+        }
+    }
+
+    @Test
+    void testRandomRemove() {
+
+        int TEST_SIZE = 9000;
+
+        ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            boolean nextBit = random.nextBoolean();
+            array.add(nextBit);
+            cache.add(nextBit);
+        }
+        assertEquals(cache.size(), array.size());
+
+        while (!array.isEmpty()) {
+            int nextRemoveIndex = random.nextInt(array.size());
+            boolean popValue = array.removeBool(nextRemoveIndex);
+            boolean cacheValue = cache.remove(nextRemoveIndex);
+            assertEquals(cacheValue, popValue);
+        }
     }
 
 }
