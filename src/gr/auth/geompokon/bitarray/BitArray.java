@@ -321,4 +321,22 @@ public class BitArray implements RandomAccess {
         autoShrink = newValue;
     }
 
+    public void resize(int newSize) {
+        if (newSize == elements) {
+            return;
+        }
+        // make sure to create enough longs for new size
+        int newSizeInLongs = (int)
+                Math.round(
+                        Math.ceil(
+                                (double) newSize / BITS_PER_LONG));
+
+        // copy data
+        data = Arrays.copyOf(data, newSizeInLongs);
+        // if elements were truncated, update element count
+        if (newSize < elements) {
+            elements = newSize;
+        }
+    }
+
 }

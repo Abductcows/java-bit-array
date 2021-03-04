@@ -11,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class BitArrayTest {
 
     static BitArray array;
+    static Random random;
 
     @BeforeEach
     void setUp() {
         array = new BitArray();
+        random = new Random();
     }
 
 
@@ -23,7 +25,6 @@ class BitArrayTest {
     void testAppendAndGet() {
 
         final int TEST_SIZE = 9000;
-        Random random = new Random();
         int[] cachedInsertions = new int[TEST_SIZE];
 
         for (int i=0; i<TEST_SIZE; i++) {
@@ -42,7 +43,6 @@ class BitArrayTest {
     @Test
     void testSet() {
         final int TEST_SIZE = 9000;
-        Random random = new Random();
 
         for (int i=0; i<TEST_SIZE; i++) {
             int nextBit = random.nextInt(2); // exclusive
@@ -65,7 +65,6 @@ class BitArrayTest {
     void testInsert0AndGet() {
 
         final int TEST_SIZE = 9000;
-        Random random = new Random();
         Stack<Integer> cachedInsertions = new Stack<>();
 
         for (int i=0; i<TEST_SIZE; i++) {
@@ -79,6 +78,29 @@ class BitArrayTest {
             assertEquals(cachedInsertions.pop(), array.get(i));
         }
         assertEquals(TEST_SIZE, array.size());
+    }
+
+    @Test
+    void testSizeResize() {
+
+        int TEST_SIZE = 9000;
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            boolean nextBit = random.nextBoolean();
+            array.add(nextBit);
+        }
+
+        assertEquals(TEST_SIZE, array.size());
+        array.resize(array.size());
+        assertEquals(TEST_SIZE, array.size()); // size should be equal to # of insertions
+
+        int greaterSize = 2 * TEST_SIZE;
+        array.resize(greaterSize);
+        assertEquals(TEST_SIZE, array.size()); // size should remain unchanged
+
+        int lesserSize = TEST_SIZE / 2;
+        array.resize(lesserSize);
+        assertEquals(lesserSize, array.size()); // size should be truncated
     }
 
 }
