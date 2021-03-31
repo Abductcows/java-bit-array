@@ -233,18 +233,24 @@ public class BitArray implements RandomAccess {
 
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // find long index of the last element of the array
-        int currentIndex = getLongIndex(elements-1);
-        int MSB = 0; // dont care, will find a better way eventually
-        while (currentIndex > longIndex) {
-            MSB = appendLongShiftLeft(MSB, currentIndex--, 0);
+        int currentLongIndex = getLongIndex(elements-1);
+        int MSB = 0; // don't care, will find a better way eventually
+        while (currentLongIndex > longIndex) {
+            MSB = appendLongShiftLeft(MSB, currentLongIndex--, 0);
         }
-        appendLongShiftLeft(MSB, longIndex, indexInLong + 1);
+        appendLongShiftLeft(MSB, longIndex, indexInLong);
     }
 
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
-        long leftSide = getSelectionLeftExclusive(indexInLong, data[longIndex]);
+        long leftSide;
+        if (indexInLong > 0) {
+          leftSide = getSelectionLeftExclusive(indexInLong, data[longIndex]);
+        } else {
+          leftSide = 0;
+        }
         long rightSide = getSelectionRightInclusive(indexInLong, data[longIndex]);
-        long rightSideMSB = rightSide & getSelectionMask(indexInLong);
+        long rightSideMSB = rightSide & bits[indexInLong];
+        rightSide &= ~bits[indexInLong];
         rightSide <<= 1;
         rightSide += bit;
         data[longIndex] = leftSide + rightSide;
