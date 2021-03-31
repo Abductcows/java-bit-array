@@ -21,47 +21,6 @@ class BitArrayTest {
     }
 
 
-
-    @Test
-    void testAppendAndGet() {
-
-        final int TEST_SIZE = 9000;
-        int[] cachedInsertions = new int[TEST_SIZE];
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2); // exclusive
-            cachedInsertions[i] = nextBit;
-            array.add(nextBit);
-        }
-
-        // check data integrity
-        for (int i=0; i<TEST_SIZE; i++) {
-            assertEquals(cachedInsertions[i], array.get(i));
-        }
-        assertEquals(TEST_SIZE, array.size());
-    }
-
-    @Test
-    void testSet() {
-        final int TEST_SIZE = 9000;
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2); // exclusive
-            array.add(0, nextBit);
-        }
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            // get the current bit
-            int currentBit = array.get(i);
-            // set the current bit to its opposite and check if it has been set
-            array.set(i, (Math.abs(currentBit-1)));
-
-            assertEquals(1, currentBit + array.get(i));
-        }
-
-        assertEquals(TEST_SIZE, array.size());
-    }
-
     @Test
     void testInsert0AndGet() {
 
@@ -82,12 +41,53 @@ class BitArrayTest {
     }
 
     @Test
+    void testRandomInsertAndGet() {
+
+        final int TEST_SIZE = 9000;
+        ArrayList<Integer> cachedInsertions = new ArrayList<>(TEST_SIZE + 1);
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            int nextBit = random.nextInt(2); // exclusive
+            int nextIndex = random.nextInt(array.size()+1);
+            cachedInsertions.add(nextIndex, nextBit);
+            array.add(nextIndex, nextBit);
+        }
+
+        // check data integrity
+        for (int i=0; i<TEST_SIZE; i++) {
+            assertEquals(cachedInsertions.get(i), array.get(i));
+        }
+        assertEquals(TEST_SIZE, array.size());
+    }
+
+    /*@Test
+    void testSet() {
+        final int TEST_SIZE = 9000;
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            int nextBit = random.nextInt(2); // exclusive
+            array.add(0, nextBit);
+        }
+
+        for (int i=0; i<TEST_SIZE; i++) {
+            // get the current bit
+            int currentBit = array.get(i);
+            // set the current bit to its opposite and check if it has been set
+            array.set(i, (Math.abs(currentBit-1)));
+
+            assertEquals(1, currentBit + array.get(i));
+        }
+
+        assertEquals(TEST_SIZE, array.size());
+    }*/
+
+    @Test
     void testSizeResize() {
 
         int TEST_SIZE = 9000;
 
         for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
+            int nextBit = random.nextInt(2);
             array.add(nextBit);
         }
 
@@ -112,16 +112,16 @@ class BitArrayTest {
         ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
 
         for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
+            int nextBit = random.nextInt(2);
             array.add(nextBit);
-            cache.add(nextBit);
+            cache.add(nextBit == 1);
         }
         assertEquals(cache.size(), array.size());
 
         while (!array.isEmpty()) {
-            boolean popValue = array.removeBool();
+            int popValue = array.remove(array.size()-1);
             boolean cacheValue = cache.remove(cache.size()-1);
-            assertEquals(cacheValue, popValue);
+            assertEquals(cacheValue, popValue == 1);
         }
     }
 
@@ -133,17 +133,17 @@ class BitArrayTest {
         ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
 
         for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
+            int nextBit = random.nextInt(2);
             array.add(nextBit);
-            cache.add(nextBit);
+            cache.add(nextBit == 1);
         }
         assertEquals(cache.size(), array.size());
 
         while (!array.isEmpty()) {
             int nextRemoveIndex = random.nextInt(array.size());
-            boolean popValue = array.removeBool(nextRemoveIndex);
+            int popValue = array.remove(nextRemoveIndex);
             boolean cacheValue = cache.remove(nextRemoveIndex);
-            assertEquals(cacheValue, popValue);
+            assertEquals(cacheValue, popValue == 1);
         }
     }
 
