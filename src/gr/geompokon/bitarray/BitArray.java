@@ -1,18 +1,10 @@
-package gr.auth.geompokon.bitarray;
+package gr.geompokon.bitarray;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.RandomAccess;
 
-public class BitArray implements RandomAccess {
-
-
-    public static void main(String[] args) {
-        BitArray b = new BitArray();
-
-        System.out.println(b.getSelectionLeftExclusive(0, -1));
-        System.out.println(b.getSelectionRightInclusive(0, -1));
-    }
+public class BitArray extends ArrayList<Integer> implements RandomAccess {
 
     // p2[i] is a long with 1 only in index i (left to right)
     // p2[i-1] - 1 is a bit mask with ones at index i and to the right (i >= 1)
@@ -87,28 +79,23 @@ public class BitArray implements RandomAccess {
         };
     }
 
-    private static final int DEFAULT_SIZE = 512;
+    private static final int DEFAULT_SIZE = 32;
     private static final int BITS_PER_LONG = 64;
     private long[] data;
     private int elements; // number of elements in the array
-
     private boolean autoShrink;
 
-    ArrayList<Long> reference; // cannot call add at index > size (at == size it's an append)
+    private ArrayList<Integer> reference;
 
     public BitArray() {
         this(DEFAULT_SIZE);
     }
     public BitArray(int initialLength) {
-        this(initialLength, false);
-    }
-    public BitArray(int initialLength, boolean autoShrink) {
         if (initialLength < 0) {
-            throw new IllegalArgumentException("Bit array initial size is negative");
+            throw new IllegalArgumentException("Array initial size is negative");
         }
-        data = new long[initialLength];
-        this.autoShrink = autoShrink;
-        // new array, 0 entries so far
+        int sizeInLongs = (int) Math.round(Math.ceil((double)initialLength / BITS_PER_LONG));
+        data = new long[sizeInLongs];
         elements = 0;
     }
 
@@ -133,6 +120,12 @@ public class BitArray implements RandomAccess {
         return true;
     }
 
+    @Override
+    public boolean add(Integer bit) { return add(bit.intValue()); }
+
+    @Override
+    public void add(int index, Integer bit) { add(index, bit.intValue()); }
+
     /**
      * Returns the bit value from the selected index
      *
@@ -140,7 +133,8 @@ public class BitArray implements RandomAccess {
      * @return 0 or 1 corresponding to the bit value
      * @throws IndexOutOfBoundsException if index is negative or ge to number of elements
      */
-    public int get(int index) {
+    @Override
+    public Integer get(int index) {
         if (index < 0 || index >= elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
         }
@@ -149,29 +143,39 @@ public class BitArray implements RandomAccess {
         // get index of the bit inside the long
         int indexInLong = getIndexInLong(index);
 
-        // return the value of the bit in the long
-        return getBitInLong(indexInLong, data[longIndex]);
+        long onlySelectedBit = data[longIndex] & bits[indexInLong];
+
+        // result of & is zero if-f the bit is zero
+        if (onlySelectedBit == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    @Override
+    public Integer remove(int index) {
+        if (index < 0 || index >= elements) {
+            throw new IndexOutOfBoundsException("Array index out of bounds");
+        }
+        int bit = get(index);
+
+        int longIndex = getLongIndex(index);
+        int indexInLong = getIndexInLong(index);
+        removeAndShiftAllLeft(longIndex, indexInLong);
+
+
+        elements = elements - 1;
+        if (autoShrink) {
+            checkAndShrink();
+        }
+        return bit;
     }
 
-   public int remove(int index) {
-       if (index < 0 || index >= elements) {
-           throw new IndexOutOfBoundsException("Array index out of bounds");
-       }
-
-       int bit = get(index);
-
-       int longIndex = getLongIndex(index);
-       int indexInLong = getIndexInLong(index);
-       removeAndShiftAllLeft(longIndex, indexInLong);
-
-
-       elements = elements - 1;
-       return bit;
-   }
-
+    @Override
     public int size() {
         return elements;
     }
+    @Override
     public boolean isEmpty() {
         return elements == 0;
     }
@@ -179,11 +183,9 @@ public class BitArray implements RandomAccess {
     private int getLongIndex(int bitIndex) {
         return bitIndex / BITS_PER_LONG;
     }
-
     private int getIndexInLong(int bitIndex) {
         return bitIndex % BITS_PER_LONG;
     }
-
     private void set(int index, int bit) {
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -196,9 +198,13 @@ public class BitArray implements RandomAccess {
     }
 
     private void addAndShiftAllRight(int bit, int longIndex, int indexInLong) {
-        int LSB = insertInLongShiftRight(bit, longIndex, indexInLong);
-        while (LSB != -1) {
-            LSB = insertInLongShiftRight(LSB, ++longIndex, 0);
+        // start at long index and work all the way to the end of the array
+        int maxLongIndex = getLongIndex(elements);
+        // add the bit and save the LSB that was shifted out
+        int LSB = insertInLongShiftRight(bit, longIndex++, indexInLong);
+        // keep inserting old LSB at 0 of next long and moving on with the new LSB
+        while (longIndex <= maxLongIndex) {
+            LSB = insertInLongShiftRight(LSB, longIndex++, 0);
         }
     }
     /**
@@ -212,69 +218,56 @@ public class BitArray implements RandomAccess {
      * @return LSB of the long before insertion or -1 if it was not an element of the array
      */
     private int insertInLongShiftRight(int bit, int longIndex, int indexInLong) {
-        long leftSide = getSelectionLeftExclusive(indexInLong, data[longIndex]);
-        long rightSide = getSelectionRightInclusive(indexInLong, data[longIndex]);
+        // get left side [0 : indexInLong), can be empty, will remain intact
+        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        // get right side [indexInLong : ], can not be empty, needs to be shifted
+        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
+
+        // save LSB
         long rightSideLSB = rightSide & 1L;
         // unsigned shift to the right to make space for the new bit
         rightSide >>>= 1;
-        // add them back together
-        data[longIndex] = leftSide + rightSide;
         // new bit is 0 from the shift, change it to 1 if required
         if (bit == 1) {
-            data[longIndex] |= bits[indexInLong];
+            rightSide |= bits[indexInLong];
         }
-        // check if LSB saved was not a value of the array
-        if (elements + 1 < (longIndex + 1) * BITS_PER_LONG) {
-            return -1;
-        }
-        // else return it for next iteration
+        // re-join the two parts
+        data[longIndex] = leftSide + rightSide;
+
+        // return the LSB
         return (int) rightSideLSB;
     }
 
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
-        // find long index of the last element of the array
+        // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(elements-1);
-        int MSB = 0; // don't care, will find a better way eventually
+        int MSB = 0; // dud value for first shift
+        // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
             MSB = appendLongShiftLeft(MSB, currentLongIndex--, 0);
         }
+        // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
         appendLongShiftLeft(MSB, longIndex, indexInLong);
     }
-
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
-        long leftSide;
-        if (indexInLong > 0) {
-          leftSide = getSelectionLeftExclusive(indexInLong, data[longIndex]);
-        } else {
-          leftSide = 0;
-        }
-        long rightSide = getSelectionRightInclusive(indexInLong, data[longIndex]);
+        // get left side [0 : indexInLong), can be empty, will remain intact
+        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        // get right side [indexInLong : ], can not be empty, needs to be shifted
+        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
+
+        // save MSB
         long rightSideMSB = rightSide & bits[indexInLong];
+        // clear MSB and shift to the left to make it disappear
         rightSide &= ~bits[indexInLong];
         rightSide <<= 1;
+        // append the previous bit
         rightSide += bit;
+
+        // re-join the two parts
         data[longIndex] = leftSide + rightSide;
 
+        // return the MSB
         return rightSideMSB == 0 ? 0 : 1;
-    }
-
-    /**
-     * Returns the bit in index i (counting left to right) from argument long
-     *
-     * @param i index of the bit
-     * @param l long housing the bit
-     * @return integer value of the bit
-     */
-    private int getBitInLong(int i, long l) {
-        // bitwise & with 1 bit mask to get the desired bit
-        long onlySelectedBit = l & bits[i];
-
-        // result of & is zero if-f the bit is zero
-        if (onlySelectedBit == 0) {
-            return 0;
-        } else {
-            return 1;
-        }
     }
 
     private long getSelectionMask(int index) {
@@ -282,24 +275,24 @@ public class BitArray implements RandomAccess {
                 -1 :
                 bits[index - 1] - 1;
     }
-    private long getSelectionLeftExclusive(int index, long theLong) {
-        return theLong & (~getSelectionMask(index));
+    private long getBitsStartToIndexExclusive(int indexExclusive, long theLong) {
+        return theLong & (~getSelectionMask(indexExclusive));
     }
-    private long getSelectionRightInclusive(int index, long theLong) {
+    private long getBitsIndexToEnd(int index, long theLong) {
         return theLong & getSelectionMask(index);
     }
 
     private void ensureCapacity() {
         if (elements == data.length * BITS_PER_LONG) {
-            extendArray();
+            resize(2 * elements);
         }
     }
-    private void extendArray() {
-        resize(2 * elements);
+    private void checkAndShrink() {
+        if (data.length > 1 && 2 * elements < data.length * BITS_PER_LONG) {
+            resize(elements);
+        }
     }
-    private void shrinkArray() {
-        resize(elements / 2);
-    }
+
     public boolean isAutoShrinking() {
         return autoShrink;
     }
@@ -307,10 +300,8 @@ public class BitArray implements RandomAccess {
         autoShrink = newValue;
     }
     public void resize(int newSize) {
-        if (newSize == elements) {
-            return;
-        }
         // make sure to create enough longs for new size
+        newSize = Math.max(newSize, 1);
         int newSizeInLongs = (int)
                 Math.round(
                         Math.ceil(
@@ -322,5 +313,9 @@ public class BitArray implements RandomAccess {
         if (newSize < elements) {
             elements = newSize;
         }
+    }
+
+    int getDataLength() {
+        return data.length;
     }
 }
