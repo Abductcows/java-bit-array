@@ -9,16 +9,16 @@ import java.util.Stack;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BitArrayTest {
+class BitArrayImplTest {
 
-    static BitArray array;
+    static BitArrayImpl array;
     static Random random;
     static int TEST_SIZE;
 
     @BeforeEach
     void setUp() {
         TEST_SIZE = 9000;
-        array = new BitArray();
+        array = new BitArrayImpl();
         random = new Random();
     }
 
@@ -120,7 +120,7 @@ class BitArrayTest {
 
     @Test
     void testAutoShrink() {
-        array = new BitArray(TEST_SIZE / 64);
+        array = new BitArrayImpl(TEST_SIZE / 64);
         array.setAutoShrink(true);
         for (int i=0; i<TEST_SIZE; i++) {
             int nextBit = random.nextInt(2);

@@ -1,321 +1,253 @@
 package gr.geompokon.bitarray;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.RandomAccess;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
-public class BitArray extends ArrayList<Integer> implements RandomAccess {
+public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
-    // p2[i] is a long with 1 only in index i (left to right)
-    // p2[i-1] - 1 is a bit mask with ones at index i and to the right (i >= 1)
-    private static final long[] bits;
+    BitArrayImpl array;
 
-    static {
-        bits = new long[]{
-                Long.MIN_VALUE, // 0b100...0
-                4611686018427387904L, // 2^62, 0b0100...0
-                2305843009213693952L, // 2^61, 0b00100..0
-                1152921504606846976L, // ...
-                576460752303423488L,
-                288230376151711744L,
-                144115188075855872L,
-                72057594037927936L,
-                36028797018963968L,
-                18014398509481984L,
-                9007199254740992L,
-                4503599627370496L,
-                2251799813685248L,
-                1125899906842624L,
-                562949953421312L,
-                281474976710656L,
-                140737488355328L,
-                70368744177664L,
-                35184372088832L,
-                17592186044416L,
-                8796093022208L,
-                4398046511104L,
-                2199023255552L,
-                1099511627776L,
-                549755813888L,
-                274877906944L,
-                137438953472L,
-                68719476736L,
-                34359738368L,
-                17179869184L,
-                8589934592L,
-                4294967296L,
-                2147483648L,
-                1073741824L,
-                536870912L,
-                268435456L,
-                134217728L,
-                67108864L,
-                33554432L,
-                16777216L,
-                8388608L,
-                4194304L,
-                2097152L,
-                1048576L,
-                524288L,
-                262144L,
-                131072L,
-                65536L,
-                32768L,
-                16384L,
-                8192L,
-                4096L,
-                2048L,
-                1024L, // 2^10
-                512L,
-                256L,
-                128L,
-                64L,
-                32L,
-                16L,
-                8L,
-                4L,
-                2L,
-                1L, // 2^0
-        };
+    BitArray() {
+        array = new BitArrayImpl();
     }
-
-    private static final int DEFAULT_SIZE = 32;
-    private static final int BITS_PER_LONG = 64;
-    private long[] data;
-    private int elements; // number of elements in the array
-    private boolean autoShrink;
-
-    private ArrayList<Integer> reference;
-
-    public BitArray() {
-        this(DEFAULT_SIZE);
-    }
-    public BitArray(int initialLength) {
-        if (initialLength < 0) {
-            throw new IllegalArgumentException("Array initial size is negative");
-        }
-        int sizeInLongs = (int) Math.round(Math.ceil((double)initialLength / BITS_PER_LONG));
-        data = new long[sizeInLongs];
-        elements = 0;
-    }
-
-    public boolean add(int bit) {
-        return add(elements, bit);
-    }
-    public boolean add(int index, int bit) {
-        // check for index out of bounds
-        if (index < 0 || index > elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
-        }
-        ensureCapacity();
-
-        // check for append or non-appending insert
-        if (index == elements) {
-            set(elements, bit);
-        } else {
-            addAndShiftAllRight(bit, getLongIndex(index), getIndexInLong(index));
-        }
-
-        elements = elements + 1;
-        return true;
+    BitArray(int initialSize) {
+        array = new BitArrayImpl(initialSize);
     }
 
     @Override
-    public boolean add(Integer bit) { return add(bit.intValue()); }
-
-    @Override
-    public void add(int index, Integer bit) { add(index, bit.intValue()); }
-
-    /**
-     * Returns the bit value from the selected index
-     *
-     * @param index index of the bit in the array
-     * @return 0 or 1 corresponding to the bit value
-     * @throws IndexOutOfBoundsException if index is negative or ge to number of elements
-     */
-    @Override
-    public Integer get(int index) {
-        if (index < 0 || index >= elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
-        }
-        // get index of the long housing the bit
-        int longIndex = getLongIndex(index);
-        // get index of the bit inside the long
-        int indexInLong = getIndexInLong(index);
-
-        long onlySelectedBit = data[longIndex] & bits[indexInLong];
-
-        // result of & is zero if-f the bit is zero
-        if (onlySelectedBit == 0) {
-            return 0;
-        } else {
-            return 1;
-        }
+    public boolean add(Integer bit) {
+        return array.add(bit);
     }
+
+    @Override
+    public Integer set(int index, Integer bit) {
+        return array.set(index, bit);
+    }
+
+    @Override
+    public void add(int index, Integer bit) {
+        array.add(index, bit);
+    }
+
     @Override
     public Integer remove(int index) {
-        if (index < 0 || index >= elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
+        return array.remove(index);
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        Iterator<Integer> it = this.iterator();
+        int index = 0;
+        while (it.hasNext()) {
+            if (it.next().equals(o)) {
+                return index;
+            }
+            ++index;
         }
-        int bit = get(index);
+        return -1;
+    }
 
-        int longIndex = getLongIndex(index);
-        int indexInLong = getIndexInLong(index);
-        removeAndShiftAllLeft(longIndex, indexInLong);
-
-
-        elements = elements - 1;
-        if (autoShrink) {
-            checkAndShrink();
+    @Override
+    public int lastIndexOf(Object o) {
+        Iterator<Integer> it = this.iterator();
+        int index = 0, lastIndex = -1;
+        while (it.hasNext()) {
+            if (it.next().equals(o)) {
+                lastIndex = index;
+            }
+            ++index;
         }
-        return bit;
+        return lastIndex;
+    }
+
+    @Override
+    public void clear() {
+        // TODO: add clear method to BitArrayImpl
+        super.clear();
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Integer> c) {
+        return super.addAll(index, c);
+    }
+
+    @Override
+    public Iterator<Integer> iterator() {
+        return new BitIterator(this);
+    }
+
+    @Override
+    public ListIterator<Integer> listIterator() {
+        // TODO
+        return super.listIterator();
+    }
+
+    @Override
+    public ListIterator<Integer> listIterator(int index) {
+        // TODO
+        return super.listIterator(index);
+    }
+
+    @Override
+    public List<Integer> subList(int fromIndex, int toIndex) {
+        return super.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // TODO: can uncomment when listIterator is implemented
+        // return super.equals(o);
+
+        return this == o;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        // TODO
+        super.removeRange(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return array.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return indexOf(o) >= 0;
+    }
+
+    @Override
+    public Object[] toArray() {
+        // TODO
+        return super.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        // TODO
+        return super.toArray(a);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        // TODO
+        return super.remove(o);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return super.containsAll(c);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Integer> c) {
+        return super.addAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return super.removeAll(c);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return super.retainAll(c);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    @Override
+    public void replaceAll(UnaryOperator<Integer> operator) {
+        // TODO: implement with ListIterator?
+    }
+
+    @Override
+    public void sort(Comparator<? super Integer> c) {
+        // TODO
+    }
+
+    @Override
+    public Spliterator<Integer> spliterator() {
+        return null;
+    }
+
+    @Override
+    public <T> T[] toArray(IntFunction<T[]> generator) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super Integer> filter) {
+        return false;
+    }
+
+    @Override
+    public Stream<Integer> stream() {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public Stream<Integer> parallelStream() {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public void forEach(Consumer<? super Integer> action) {
+        Iterator<Integer> it = this.iterator();
+        it.forEachRemaining(action);
+    }
+
+    @Override
+    public Integer get(int index) {
+        return array.get(index);
     }
 
     @Override
     public int size() {
-        return elements;
-    }
-    @Override
-    public boolean isEmpty() {
-        return elements == 0;
+        return array.size();
     }
 
-    private int getLongIndex(int bitIndex) {
-        return bitIndex / BITS_PER_LONG;
-    }
-    private int getIndexInLong(int bitIndex) {
-        return bitIndex % BITS_PER_LONG;
-    }
-    private void set(int index, int bit) {
-        int longIndex = getLongIndex(index);
-        int indexInLong = getIndexInLong(index);
+    private class BitIterator implements Iterator<Integer> {
+        int currentIndex;
+        BitArray parent;
 
-        if (bit == 0) {
-            data[longIndex] &= ~bits[indexInLong];
-        } else {
-            data[longIndex] |= bits[indexInLong];
+        BitIterator(BitArray parent) {
+            currentIndex = 0;
+            this.parent = parent;
         }
-    }
 
-    private void addAndShiftAllRight(int bit, int longIndex, int indexInLong) {
-        // start at long index and work all the way to the end of the array
-        int maxLongIndex = getLongIndex(elements);
-        // add the bit and save the LSB that was shifted out
-        int LSB = insertInLongShiftRight(bit, longIndex++, indexInLong);
-        // keep inserting old LSB at 0 of next long and moving on with the new LSB
-        while (longIndex <= maxLongIndex) {
-            LSB = insertInLongShiftRight(LSB, longIndex++, 0);
+        @Override
+        public boolean hasNext() {
+            return currentIndex < parent.size();
         }
-    }
-    /**
-     * Inserts the bit in the index of the long specified by the arguments by shifting
-     * everything to its right to the right. If the bit that was shifted out of the long
-     * was a valid element of the array, it is returned.
-     *
-     * @param bit         the bit to be inserted
-     * @param longIndex   index of the long in the data array
-     * @param indexInLong index of the bit in the long
-     * @return LSB of the long before insertion or -1 if it was not an element of the array
-     */
-    private int insertInLongShiftRight(int bit, int longIndex, int indexInLong) {
-        // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
-        // get right side [indexInLong : ], can not be empty, needs to be shifted
-        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
 
-        // save LSB
-        long rightSideLSB = rightSide & 1L;
-        // unsigned shift to the right to make space for the new bit
-        rightSide >>>= 1;
-        // new bit is 0 from the shift, change it to 1 if required
-        if (bit == 1) {
-            rightSide |= bits[indexInLong];
+        @Override
+        public Integer next() {
+            return array.get(currentIndex++);
         }
-        // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
 
-        // return the LSB
-        return (int) rightSideLSB;
-    }
-
-    private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
-        // start at the end and work back to current long index
-        int currentLongIndex = getLongIndex(elements-1);
-        int MSB = 0; // dud value for first shift
-        // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
-        while (currentLongIndex > longIndex) {
-            MSB = appendLongShiftLeft(MSB, currentLongIndex--, 0);
+        @Override
+        public void forEachRemaining(Consumer<? super Integer> action) {
+            while (hasNext()) {
+                Integer i = next();
+                action.accept(i);
+            }
         }
-        // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
-        appendLongShiftLeft(MSB, longIndex, indexInLong);
-    }
-    private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
-        // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
-        // get right side [indexInLong : ], can not be empty, needs to be shifted
-        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
-
-        // save MSB
-        long rightSideMSB = rightSide & bits[indexInLong];
-        // clear MSB and shift to the left to make it disappear
-        rightSide &= ~bits[indexInLong];
-        rightSide <<= 1;
-        // append the previous bit
-        rightSide += bit;
-
-        // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
-
-        // return the MSB
-        return rightSideMSB == 0 ? 0 : 1;
-    }
-
-    private long getSelectionMask(int index) {
-        return index == 0 ?
-                -1 :
-                bits[index - 1] - 1;
-    }
-    private long getBitsStartToIndexExclusive(int indexExclusive, long theLong) {
-        return theLong & (~getSelectionMask(indexExclusive));
-    }
-    private long getBitsIndexToEnd(int index, long theLong) {
-        return theLong & getSelectionMask(index);
-    }
-
-    private void ensureCapacity() {
-        if (elements == data.length * BITS_PER_LONG) {
-            resize(2 * elements);
-        }
-    }
-    private void checkAndShrink() {
-        if (data.length > 1 && 2 * elements < data.length * BITS_PER_LONG) {
-            resize(elements);
-        }
-    }
-
-    public boolean isAutoShrinking() {
-        return autoShrink;
-    }
-    public void setAutoShrink(boolean newValue) {
-        autoShrink = newValue;
-    }
-    public void resize(int newSize) {
-        // make sure to create enough longs for new size
-        newSize = Math.max(newSize, 1);
-        int newSizeInLongs = (int)
-                Math.round(
-                        Math.ceil(
-                                (double) newSize / BITS_PER_LONG));
-
-        // copy data
-        data = Arrays.copyOf(data, newSizeInLongs);
-        // if elements were truncated, update element count
-        if (newSize < elements) {
-            elements = newSize;
-        }
-    }
-
-    int getDataLength() {
-        return data.length;
     }
 }
