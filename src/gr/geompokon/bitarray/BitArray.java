@@ -72,6 +72,7 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
     @Override
     public boolean addAll(int index, Collection<? extends Integer> c) {
+        // TODO
         return super.addAll(index, c);
     }
 
@@ -181,6 +182,7 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
     @Override
     public Spliterator<Integer> spliterator() {
+        // TODO
         return null;
     }
 
@@ -192,6 +194,7 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
     @Override
     public boolean removeIf(Predicate<? super Integer> filter) {
+        // TODO
         return false;
     }
 

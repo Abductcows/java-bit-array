@@ -82,7 +82,6 @@ public class BitArrayImpl {
     private static final int BITS_PER_LONG = 64;
     private long[] data;
     private int elements; // number of elements in the array
-    private boolean autoShrink;
 
     private ArrayList<Integer> reference;
 
@@ -91,7 +90,7 @@ public class BitArrayImpl {
     }
     public BitArrayImpl(int initialLength) {
         if (initialLength < 0) {
-            throw new IllegalArgumentException("Array initial size is negative");
+            throw new IllegalArgumentException("Array initial size is negative: " + initialLength);
         }
         int sizeInLongs = (int) Math.round(Math.ceil((double)initialLength / BITS_PER_LONG));
         data = new long[sizeInLongs];
@@ -161,9 +160,6 @@ public class BitArrayImpl {
 
 
         elements = elements - 1;
-        if (autoShrink) {
-            checkAndShrink();
-        }
         return bit;
     }
 
@@ -280,18 +276,6 @@ public class BitArrayImpl {
         if (elements == data.length * BITS_PER_LONG) {
             resize(2 * elements);
         }
-    }
-    private void checkAndShrink() {
-        if (data.length > 1 && 2 * elements < data.length * BITS_PER_LONG) {
-            resize(elements);
-        }
-    }
-
-    public boolean isAutoShrinking() {
-        return autoShrink;
-    }
-    public void setAutoShrink(boolean newValue) {
-        autoShrink = newValue;
     }
     public void resize(int newSize) {
         // make sure to create enough longs for new size
