@@ -79,7 +79,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
     @Override
     public Iterator<Boolean> iterator() {
-        return new BitIterator(this);
+        return new BitIterator();
     }
 
     @Override
@@ -227,34 +227,24 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
     private class BitIterator implements Iterator<Boolean> {
         int currentIndex;
-        BitArray parent;
 
-        BitIterator(BitArray parent) {
-            currentIndex = 0;
-            this.parent = parent;
+        BitIterator() {
+            currentIndex = -1;
         }
 
         @Override
         public boolean hasNext() {
-            return currentIndex < parent.size();
+            return currentIndex + 1 < array.size();
         }
 
         @Override
         public Boolean next() {
-            return array.get(currentIndex++);
-        }
-
-        @Override
-        public void forEachRemaining(Consumer<? super Boolean> action) {
-            while (hasNext()) {
-                Boolean b = next();
-                action.accept(b);
-            }
+            return array.get(++currentIndex);
         }
 
         @Override
         public void remove() {
-            // TODO
+            array.remove(currentIndex);
         }
     }
 }
