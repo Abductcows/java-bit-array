@@ -7,9 +7,10 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public class BitArray extends AbstractList<Integer> implements RandomAccess {
+public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
     BitArrayImpl array;
+    private ArrayList<Boolean> reference;
 
     BitArray() {
         array = new BitArrayImpl();
@@ -19,28 +20,28 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
     }
 
     @Override
-    public boolean add(Integer bit) {
+    public boolean add(Boolean bit) {
         return array.add(bit);
     }
 
     @Override
-    public Integer set(int index, Integer bit) {
+    public Boolean set(int index, Boolean bit) {
         return array.set(index, bit);
     }
 
     @Override
-    public void add(int index, Integer bit) {
+    public void add(int index, Boolean bit) {
         array.add(index, bit);
     }
 
     @Override
-    public Integer remove(int index) {
+    public Boolean remove(int index) {
         return array.remove(index);
     }
 
     @Override
     public int indexOf(Object o) {
-        Iterator<Integer> it = this.iterator();
+        Iterator<Boolean> it = this.iterator();
         int index = 0;
         while (it.hasNext()) {
             if (it.next().equals(o)) {
@@ -53,7 +54,7 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
     @Override
     public int lastIndexOf(Object o) {
-        Iterator<Integer> it = this.iterator();
+        Iterator<Boolean> it = this.iterator();
         int index = 0, lastIndex = -1;
         while (it.hasNext()) {
             if (it.next().equals(o)) {
@@ -71,38 +72,37 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
     }
 
     @Override
-    public boolean addAll(int index, Collection<? extends Integer> c) {
+    public boolean addAll(int index, Collection<? extends Boolean> c) {
         // TODO
         return super.addAll(index, c);
     }
 
     @Override
-    public Iterator<Integer> iterator() {
+    public Iterator<Boolean> iterator() {
         return new BitIterator(this);
     }
 
     @Override
-    public ListIterator<Integer> listIterator() {
+    public ListIterator<Boolean> listIterator() {
         // TODO
         return super.listIterator();
     }
 
     @Override
-    public ListIterator<Integer> listIterator(int index) {
+    public ListIterator<Boolean> listIterator(int index) {
         // TODO
         return super.listIterator(index);
     }
 
     @Override
-    public List<Integer> subList(int fromIndex, int toIndex) {
+    public List<Boolean> subList(int fromIndex, int toIndex) {
+        // TODO
         return super.subList(fromIndex, toIndex);
     }
 
     @Override
     public boolean equals(Object o) {
-        // TODO: can uncomment when listIterator is implemented
-        // return super.equals(o);
-
+        // TODO: maybe something more?
         return this == o;
     }
 
@@ -147,41 +147,40 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
 
     @Override
     public boolean containsAll(Collection<?> c) {
+        // TODO
         return super.containsAll(c);
     }
 
     @Override
-    public boolean addAll(Collection<? extends Integer> c) {
+    public boolean addAll(Collection<? extends Boolean> c) {
+        // TODO
         return super.addAll(c);
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
+        // TODO
         return super.removeAll(c);
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
+        // TODO
         return super.retainAll(c);
     }
 
     @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    @Override
-    public void replaceAll(UnaryOperator<Integer> operator) {
+    public void replaceAll(UnaryOperator<Boolean> operator) {
         // TODO: implement with ListIterator?
     }
 
     @Override
-    public void sort(Comparator<? super Integer> c) {
+    public void sort(Comparator<? super Boolean> c) {
         // TODO
     }
 
     @Override
-    public Spliterator<Integer> spliterator() {
+    public Spliterator<Boolean> spliterator() {
         // TODO
         return null;
     }
@@ -193,31 +192,31 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
     }
 
     @Override
-    public boolean removeIf(Predicate<? super Integer> filter) {
+    public boolean removeIf(Predicate<? super Boolean> filter) {
         // TODO
         return false;
     }
 
     @Override
-    public Stream<Integer> stream() {
+    public Stream<Boolean> stream() {
         // TODO
         return null;
     }
 
     @Override
-    public Stream<Integer> parallelStream() {
+    public Stream<Boolean> parallelStream() {
         // TODO
         return null;
     }
 
     @Override
-    public void forEach(Consumer<? super Integer> action) {
-        Iterator<Integer> it = this.iterator();
+    public void forEach(Consumer<? super Boolean> action) {
+        Iterator<Boolean> it = this.iterator();
         it.forEachRemaining(action);
     }
 
     @Override
-    public Integer get(int index) {
+    public Boolean get(int index) {
         return array.get(index);
     }
 
@@ -226,7 +225,7 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
         return array.size();
     }
 
-    private class BitIterator implements Iterator<Integer> {
+    private class BitIterator implements Iterator<Boolean> {
         int currentIndex;
         BitArray parent;
 
@@ -241,16 +240,21 @@ public class BitArray extends AbstractList<Integer> implements RandomAccess {
         }
 
         @Override
-        public Integer next() {
+        public Boolean next() {
             return array.get(currentIndex++);
         }
 
         @Override
-        public void forEachRemaining(Consumer<? super Integer> action) {
+        public void forEachRemaining(Consumer<? super Boolean> action) {
             while (hasNext()) {
-                Integer i = next();
-                action.accept(i);
+                Boolean b = next();
+                action.accept(b);
             }
+        }
+
+        @Override
+        public void remove() {
+            // TODO
         }
     }
 }

@@ -25,10 +25,10 @@ class BitArrayImplTest {
 
     @Test
     void testInsert0AndGet() {
-        Stack<Integer> cachedInsertions = new Stack<>();
+        Stack<Boolean> cachedInsertions = new Stack<>();
 
         for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2); // exclusive
+            boolean nextBit = random.nextBoolean();
             cachedInsertions.push(nextBit);
             array.add(0, nextBit);
         }
@@ -42,10 +42,10 @@ class BitArrayImplTest {
 
     @Test
     void testRandomInsertAndGet() {
-        ArrayList<Integer> cachedInsertions = new ArrayList<>(TEST_SIZE + 1);
+        ArrayList<Boolean> cachedInsertions = new ArrayList<>(TEST_SIZE + 1);
 
         for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2); // exclusive
+            boolean nextBit = random.nextBoolean();
             int nextIndex = random.nextInt(array.size()+1);
             cachedInsertions.add(nextIndex, nextBit);
             array.add(nextIndex, nextBit);
@@ -64,7 +64,7 @@ class BitArrayImplTest {
         int TEST_SIZE = 9000;
 
         for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2);
+            boolean nextBit = random.nextBoolean();
             array.add(nextBit);
         }
 
@@ -83,28 +83,28 @@ class BitArrayImplTest {
 
     @Test
     void testPopRemove() {
-        Stack<Integer> cache = new Stack<>();
+        Stack<Boolean> cache = new Stack<>();
 
         for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2);
+            boolean nextBit = random.nextBoolean();
             array.add(nextBit);
             cache.push(nextBit);
         }
         assertEquals(cache.size(), array.size());
 
         while (!array.isEmpty()) {
-            int arrayPop = array.remove(array.size()-1);
-            int cachePop = cache.pop();
+            boolean arrayPop = array.remove(array.size()-1);
+            boolean cachePop = cache.pop();
             assertEquals(cachePop, arrayPop);
         }
     }
 
     @Test
     void testRandomRemove() {
-        ArrayList<Integer> cache = new ArrayList<>(TEST_SIZE);
+        ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
 
         for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2);
+            boolean nextBit = random.nextBoolean();
             array.add(nextBit);
             cache.add(nextBit);
         }
@@ -112,30 +112,9 @@ class BitArrayImplTest {
 
         while (!array.isEmpty()) {
             int nextRemoveIndex = random.nextInt(array.size());
-            int arrayRemove = array.remove(nextRemoveIndex);
-            int cacheRemove = cache.remove(nextRemoveIndex);
+            boolean arrayRemove = array.remove(nextRemoveIndex);
+            boolean cacheRemove = cache.remove(nextRemoveIndex);
             assertEquals(cacheRemove, arrayRemove);
         }
-    }
-
-    @Test
-    void testAutoShrink() {
-        array = new BitArrayImpl(TEST_SIZE / 64);
-        array.setAutoShrink(true);
-        for (int i=0; i<TEST_SIZE; i++) {
-            int nextBit = random.nextInt(2);
-            array.add(nextBit);
-        }
-        assertEquals(TEST_SIZE, array.size());
-
-        int previousLength = array.getDataLength();
-        while (array.size() > 0) {
-            array.remove(array.size() - 1);
-            if (array.getDataLength() != previousLength) {
-                assertEquals(previousLength/2 + previousLength%2, array.getDataLength());
-                previousLength = array.getDataLength();
-            }
-        }
-        assertEquals(0, array.size());
     }
 }

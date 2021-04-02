@@ -83,8 +83,6 @@ public class BitArrayImpl {
     private long[] data;
     private int elements; // number of elements in the array
 
-    private ArrayList<Integer> reference;
-
     public BitArrayImpl() {
         this(DEFAULT_SIZE);
     }
@@ -97,10 +95,10 @@ public class BitArrayImpl {
         elements = 0;
     }
 
-    public boolean add(int bit) {
+    public boolean add(boolean bit) {
         return add(elements, bit);
     }
-    public boolean add(int index, int bit) {
+    public boolean add(int index, boolean bit) {
         // check for index out of bounds
         if (index < 0 || index > elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
@@ -118,8 +116,8 @@ public class BitArrayImpl {
         return true;
     }
 
-    public int set(int index, int bit) {
-        int oldBit = get(index);
+    public boolean set(int index, boolean bit) {
+        boolean oldBit = get(index);
         setBit(index, bit);
         return oldBit;
     }
@@ -130,7 +128,7 @@ public class BitArrayImpl {
      * @return 0 or 1 corresponding to the bit value
      * @throws IndexOutOfBoundsException if index is negative or ge to number of elements
      */
-    public int get(int index) {
+    public boolean get(int index) {
         if (index < 0 || index >= elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
         }
@@ -142,22 +140,17 @@ public class BitArrayImpl {
         long onlySelectedBit = data[longIndex] & bits[indexInLong];
 
         // result of & is zero if-f the bit is zero
-        if (onlySelectedBit == 0) {
-            return 0;
-        } else {
-            return 1;
-        }
+        return onlySelectedBit != 0;
     }
-    public int remove(int index) {
+    public boolean remove(int index) {
         if (index < 0 || index >= elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
         }
-        int bit = get(index);
+        boolean bit = get(index);
 
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
         removeAndShiftAllLeft(longIndex, indexInLong);
-
 
         elements = elements - 1;
         return bit;
@@ -176,22 +169,23 @@ public class BitArrayImpl {
     private int getIndexInLong(int bitIndex) {
         return bitIndex % BITS_PER_LONG;
     }
-    private void setBit(int index, int bit) {
+    private void setBit(int index, boolean bit) {
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
 
-        if (bit == 0) {
-            data[longIndex] &= ~bits[indexInLong];
-        } else {
+        if (bit) {
             data[longIndex] |= bits[indexInLong];
+        } else {
+            data[longIndex] &= ~bits[indexInLong];
         }
     }
 
-    private void addAndShiftAllRight(int bit, int longIndex, int indexInLong) {
+    private void addAndShiftAllRight(boolean bit, int longIndex, int indexInLong) {
         // start at long index and work all the way to the end of the array
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
-        int LSB = insertInLongShiftRight(bit, longIndex++, indexInLong);
+        int bitIntValue = bit? 1 : 0;
+        int LSB = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
             LSB = insertInLongShiftRight(LSB, longIndex++, 0);
