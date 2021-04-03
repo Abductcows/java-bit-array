@@ -79,7 +79,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
     @Override
     public Iterator<Boolean> iterator() {
-        return new BitIterator();
+        return new BitListIterator();
     }
 
     @Override
@@ -98,17 +98,6 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
     public List<Boolean> subList(int fromIndex, int toIndex) {
         // TODO
         return super.subList(fromIndex, toIndex);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        // TODO: maybe something more?
-        return this == o;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
     }
 
     @Override
@@ -225,12 +214,10 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
         return array.size();
     }
 
-    private class BitIterator implements Iterator<Boolean> {
-        int currentIndex;
+    private class BitListIterator implements ListIterator<Boolean> {
 
-        BitIterator() {
-            currentIndex = -1;
-        }
+        int currentIndex = -1;
+        boolean previousCalled = false, nextCalled = false;
 
         @Override
         public boolean hasNext() {
@@ -239,12 +226,69 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
         @Override
         public Boolean next() {
-            return array.get(++currentIndex);
+            if (hasNext()) {
+                nextCalled = true;
+                previousCalled = false;
+                return array.get(++currentIndex);
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return currentIndex >= 0;
+        }
+
+        @Override
+        public Boolean previous() {
+            if (hasPrevious()) {
+                previousCalled = true;
+                nextCalled = false;
+                return array.get(currentIndex--);
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public int nextIndex() {
+            return currentIndex + 1;
+        }
+
+        @Override
+        public int previousIndex() {
+            return currentIndex;
         }
 
         @Override
         public void remove() {
-            array.remove(currentIndex);
+            if (nextCalled) {
+                array.remove(currentIndex + 1);
+                nextCalled = false;
+            } else if (previousCalled) {
+                array.remove(currentIndex);
+                currentIndex = currentIndex - 1;
+            } else {
+                throw new IllegalStateException("remove called with no element selected");
+            }
+        }
+
+        @Override
+        public void set(Boolean aBoolean) {
+            if (nextCalled) {
+                array.set(currentIndex + 1, aBoolean);
+                nextCalled = false;
+            } else if (previousCalled) {
+                array.set(currentIndex, aBoolean);
+            } else {
+                throw new IllegalStateException("remove called with no element selected");
+            }
+        }
+
+        @Override
+        public void add(Boolean aBoolean) {
+            array.add(currentIndex + 1, aBoolean);
         }
     }
 }
