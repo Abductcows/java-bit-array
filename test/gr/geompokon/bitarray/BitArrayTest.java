@@ -20,8 +20,8 @@ class BitArrayTest {
 
     @BeforeEach
     void setUp() {
-        bitArray = new BitArray(MAX_TEST_SIZE);
-        boolArray = new ArrayList<>(MAX_TEST_SIZE);
+        bitArray = new BitArray();
+        boolArray = new ArrayList<>();
         random = new Random();
     }
 
