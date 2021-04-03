@@ -5,8 +5,8 @@ import java.util.RandomAccess;
 
 public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
-    private final static int DEFAULT_CAPACITY = 10;
-    private BitArrayImpl array;
+    private static final int DEFAULT_CAPACITY = 10;
+    private final BitArrayImpl array;
 
     BitArray() {
         this(DEFAULT_CAPACITY);
