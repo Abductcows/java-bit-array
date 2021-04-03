@@ -16,13 +16,13 @@ class BitArrayTest {
 
     static AbstractList<Boolean> bitArray;
     static AbstractList<Boolean> boolArray;
-    Random rand;
+    static Random random;
 
     @BeforeEach
     void setUp() {
         bitArray = new BitArray(MAX_TEST_SIZE);
         boolArray = new ArrayList<>(MAX_TEST_SIZE);
-        rand = new Random();
+        random = new Random();
     }
 
     /**
@@ -35,7 +35,7 @@ class BitArrayTest {
         bitArray.clear();
         boolArray.clear();
         for (int i = 0; i < noOfElements; i++) {
-            boolean element = rand.nextBoolean();
+            boolean element = random.nextBoolean();
             bitArray.add(element);
             boolArray.add(element);
         }
@@ -51,8 +51,8 @@ class BitArrayTest {
     @Test
     void addAtIndex() {
         for (int i = 0; i < MAX_TEST_SIZE; i++) {
-            int index = rand.nextInt(bitArray.size() + 1);
-            boolean element = rand.nextBoolean();
+            int index = random.nextInt(bitArray.size() + 1);
+            boolean element = random.nextBoolean();
             bitArray.add(index, element);
             boolArray.add(index, element);
         }
@@ -64,7 +64,7 @@ class BitArrayTest {
         initArrays(MAX_TEST_SIZE);
 
         for (int i = 0; i < MAX_TEST_SIZE; i++) {
-            int index = rand.nextInt(bitArray.size());
+            int index = random.nextInt(bitArray.size());
             Boolean negatedElement = !bitArray.get(index);
             bitArray.set(index, negatedElement);
             boolArray.set(index, negatedElement);
@@ -78,7 +78,7 @@ class BitArrayTest {
         initArrays(MAX_TEST_SIZE);
 
         for (int i = 0; i < MAX_TEST_SIZE; i++) {
-            int index = rand.nextInt(bitArray.size());
+            int index = random.nextInt(bitArray.size());
             bitArray.remove(index);
             boolArray.remove(index);
         }
@@ -112,7 +112,7 @@ class BitArrayTest {
 
         int noToAdd = 100;
         for (int i = 0; i < noToAdd; i++) {
-            bitArray.add(rand.nextBoolean());
+            bitArray.add(random.nextBoolean());
         }
     }
 }
