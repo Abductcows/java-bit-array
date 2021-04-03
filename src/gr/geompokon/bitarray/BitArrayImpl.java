@@ -30,10 +30,11 @@ public class BitArrayImpl {
     }
 
     public boolean add(boolean bit) {
-        return add(elements, bit);
+        add(elements, bit);
+        return true;
     }
 
-    public boolean add(int index, boolean bit) {
+    public void add(int index, boolean bit) {
         // check for index out of bounds
         if (index < 0 || index > elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
@@ -50,13 +51,6 @@ public class BitArrayImpl {
         }
 
         elements = elements + 1;
-        return true;
-    }
-
-    public boolean set(int index, boolean bit) {
-        boolean oldBit = get(index);
-        setBit(index, bit);
-        return oldBit;
     }
 
     /**
@@ -81,6 +75,12 @@ public class BitArrayImpl {
         return onlySelectedBit != 0;
     }
 
+    public boolean set(int index, boolean bit) {
+        boolean oldBit = get(index);
+        setBit(index, bit);
+        return oldBit;
+    }
+
     public boolean remove(int index) {
         if (index < 0 || index >= elements) {
             throw new IndexOutOfBoundsException("Array index out of bounds");
@@ -103,7 +103,10 @@ public class BitArrayImpl {
         return elements == 0;
     }
 
-    public void clear() { initMembers(DEFAULT_CAPACITY); }
+    public void clear() {
+        initMembers(DEFAULT_CAPACITY);
+    }
+
 
     private int getLongIndex(int bitIndex) {
         return bitIndex / BITS_PER_LONG;
