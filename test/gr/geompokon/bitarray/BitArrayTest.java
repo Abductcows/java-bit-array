@@ -77,7 +77,7 @@ class BitArrayTest {
     void remove() {
         initArrays(MAX_TEST_SIZE);
 
-        for (int i = 0; i < MAX_TEST_SIZE; i++) {
+        for (int i = 0; i < MAX_TEST_SIZE && !bitArray.isEmpty(); i++) {
             int index = random.nextInt(bitArray.size());
             bitArray.remove(index);
             boolArray.remove(index);
