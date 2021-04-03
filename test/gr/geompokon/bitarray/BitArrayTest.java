@@ -114,5 +114,7 @@ class BitArrayTest {
         for (int i = 0; i < noToAdd; i++) {
             bitArray.add(random.nextBoolean());
         }
+        expectedSize += noToAdd;
+        assertEquals(expectedSize, bitArray.size());
     }
 }
