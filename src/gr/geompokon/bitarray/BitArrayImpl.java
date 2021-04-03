@@ -226,7 +226,7 @@ public class BitArrayImpl {
         }
     }
 
-    public void resize(int newSize) {
+    private void resize(int newSize) {
         // make sure to create enough longs for new size
         newSize = Math.max(newSize, 1);
         int newSizeInLongs = (int)
