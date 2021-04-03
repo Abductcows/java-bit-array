@@ -22,9 +22,8 @@ public class BitArrayImpl {
 
     private void initMembers(int initialCapacity) {
         int sizeInLongs =
-                (int) Math.round(
-                        Math.ceil(
-                                (double) initialCapacity / BITS_PER_LONG));
+                (int) Math.ceil(
+                        (double) initialCapacity / BITS_PER_LONG);
         data = new long[sizeInLongs];
         elements = 0;
     }
@@ -132,10 +131,10 @@ public class BitArrayImpl {
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
         int bitIntValue = bit ? 1 : 0;
-        int LSB = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
+        int leastSignificantBit = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
-            LSB = insertInLongShiftRight(LSB, longIndex++, 0);
+            leastSignificantBit = insertInLongShiftRight(leastSignificantBit, longIndex++, 0);
         }
     }
 
@@ -227,12 +226,14 @@ public class BitArrayImpl {
     }
 
     private void resize(int newSize) {
+        // In case the initial capacity of the array is 0, simply call
+        // {@link #initMembers} and declare the new capacity a one.
+        if (newSize == 0) {
+            this.initMembers(1);
+            return;
+        }
         // make sure to create enough longs for new size
-        newSize = Math.max(newSize, 1);
-        int newSizeInLongs = (int)
-                Math.round(
-                        Math.ceil(
-                                (double) newSize / BITS_PER_LONG));
+        int newSizeInLongs = (int) Math.ceil((double) newSize / BITS_PER_LONG);
 
         // copy data
         data = Arrays.copyOf(data, newSizeInLongs);
