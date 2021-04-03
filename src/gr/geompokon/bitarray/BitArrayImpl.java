@@ -141,10 +141,10 @@ public class BitArrayImpl {
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
         int bitIntValue = bit ? 1 : 0;
-        int leastSignificantBit = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
+        int rightmostBit = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
-            leastSignificantBit = insertInLongShiftRight(leastSignificantBit, longIndex++, 0);
+            rightmostBit = insertInLongShiftRight(rightmostBit, longIndex++, 0);
         }
     }
 
@@ -181,13 +181,13 @@ public class BitArrayImpl {
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(elements - 1);
-        int MSB = 0; // dud value for first shift
+        int leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
-            MSB = appendLongShiftLeft(MSB, currentLongIndex--, 0);
+            leftmostBit = appendLongShiftLeft(leftmostBit, currentLongIndex--, 0);
         }
         // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
-        appendLongShiftLeft(MSB, longIndex, indexInLong);
+        appendLongShiftLeft(leftmostBit, longIndex, indexInLong);
     }
 
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
@@ -249,13 +249,12 @@ public class BitArrayImpl {
             return;
         }
         // make sure to create enough longs for new size
-        int newSizeInLongs = (int) Math.ceil((double) newSize / BITS_PER_LONG);
+        int newSizeInLongs = (int) Math.ceil(
+                (double) newSize / BITS_PER_LONG);
 
         // copy data
         data = Arrays.copyOf(data, newSizeInLongs);
         // if elements were truncated, update element count
-        if (newSize < elements) {
-            elements = newSize;
-        }
+        elements = Math.min(elements, newSize);
     }
 }
