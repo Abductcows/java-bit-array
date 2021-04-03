@@ -51,9 +51,7 @@ public class BitArrayImpl {
 
     public void add(int index, boolean bit) {
         // check for index out of bounds
-        if (index < 0 || index > elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
-        }
+        ensureIndexInRange(index, size());
         ensureCapacity();
 
         // check for append
@@ -73,12 +71,10 @@ public class BitArrayImpl {
      *
      * @param index index of the bit in the array
      * @return 0 or 1 corresponding to the bit value
-     * @throws IndexOutOfBoundsException if index is negative or ge to number of elements
+     * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     public boolean get(int index) {
-        if (index < 0 || index >= elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
-        }
+        ensureIndexInRange(index, size() - 1);
         // get index of the long housing the bit
         int longIndex = getLongIndex(index);
         // get index of the bit inside the long
@@ -97,9 +93,7 @@ public class BitArrayImpl {
     }
 
     public boolean remove(int index) {
-        if (index < 0 || index >= elements) {
-            throw new IndexOutOfBoundsException("Array index out of bounds");
-        }
+        ensureIndexInRange(index, size() - 1);
         boolean bit = get(index);
 
         int longIndex = getLongIndex(index);
@@ -233,6 +227,12 @@ public class BitArrayImpl {
 
     private long getBitsIndexToEnd(int index, long theLong) {
         return theLong & getSelectionMask(index);
+    }
+
+    private void ensureIndexInRange(int index, int endInclusive) {
+        if (index < 0 || index > endInclusive) {
+            throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + this.size());
+        }
     }
 
     private void ensureCapacity() {
