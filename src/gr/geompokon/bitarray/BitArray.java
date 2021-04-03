@@ -8,11 +8,11 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
     private static final int DEFAULT_CAPACITY = 10;
     private final BitArrayImpl array;
 
-    BitArray() {
+    public BitArray() {
         this(DEFAULT_CAPACITY);
     }
 
-    BitArray(int initialSize) {
+    public BitArray(int initialSize) {
         array = new BitArrayImpl(initialSize);
     }
 
