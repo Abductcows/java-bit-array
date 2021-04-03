@@ -43,7 +43,6 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess {
 
     @Override
     public void clear() {
-        // TODO: implement clear in BitArrayImpl
-        super.clear();
+        array.clear();
     }
 }

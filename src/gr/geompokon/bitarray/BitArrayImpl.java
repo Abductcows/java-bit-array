@@ -13,11 +13,18 @@ public class BitArrayImpl {
         this(DEFAULT_CAPACITY);
     }
 
-    public BitArrayImpl(int initialLength) {
-        if (initialLength < 0) {
-            throw new IllegalArgumentException("Array initial size is negative: " + initialLength);
+    public BitArrayImpl(int initialCapacity) {
+        if (initialCapacity < 0) {
+            throw new IllegalArgumentException("Array initial size is negative: " + initialCapacity);
         }
-        int sizeInLongs = (int) Math.round(Math.ceil((double) initialLength / BITS_PER_LONG));
+        initMembers(initialCapacity);
+    }
+
+    private void initMembers(int initialCapacity) {
+        int sizeInLongs =
+                (int) Math.round(
+                        Math.ceil(
+                                (double) initialCapacity / BITS_PER_LONG));
         data = new long[sizeInLongs];
         elements = 0;
     }
@@ -95,6 +102,8 @@ public class BitArrayImpl {
     public boolean isEmpty() {
         return elements == 0;
     }
+
+    public void clear() { initMembers(DEFAULT_CAPACITY); }
 
     private int getLongIndex(int bitIndex) {
         return bitIndex / BITS_PER_LONG;
