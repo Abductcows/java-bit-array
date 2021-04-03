@@ -5,116 +5,85 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Stack;
+import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BitArrayImplTest {
 
-    static BitArrayImpl array;
+    static final int MAX_TEST_SIZE = 500;
+
+    static BitArrayImpl myArray;
+    static ArrayList<Boolean> arrayList;
     static Random random;
-    static int TEST_SIZE;
 
     @BeforeEach
     void setUp() {
-        TEST_SIZE = 9000;
-        array = new BitArrayImpl();
+        myArray = new BitArrayImpl();
+        arrayList = new ArrayList<>();
         random = new Random();
     }
 
-
-    @Test
-    void testInsert0AndGet() {
-        Stack<Boolean> cachedInsertions = new Stack<>();
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
-            cachedInsertions.push(nextBit);
-            array.add(0, nextBit);
-        }
-
-        // check data integrity
-        for (int i=0; i<TEST_SIZE; i++) {
-            assertEquals(cachedInsertions.pop(), array.get(i));
-        }
-        assertEquals(TEST_SIZE, array.size());
-    }
-
-    @Test
-    void testRandomInsertAndGet() {
-        ArrayList<Boolean> cachedInsertions = new ArrayList<>(TEST_SIZE + 1);
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
-            int nextIndex = random.nextInt(array.size()+1);
-            cachedInsertions.add(nextIndex, nextBit);
-            array.add(nextIndex, nextBit);
-        }
-
-        // check data integrity
-        for (int i=0; i<TEST_SIZE; i++) {
-            assertEquals(cachedInsertions.get(i), array.get(i));
-        }
-        assertEquals(TEST_SIZE, array.size());
-    }
-
-    @Test
-    void testSizeResize() {
-
-        int TEST_SIZE = 9000;
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
-            array.add(nextBit);
-        }
-
-        assertEquals(TEST_SIZE, array.size());
-        array.resize(array.size());
-        assertEquals(TEST_SIZE, array.size()); // size should be equal to # of insertions
-
-        int greaterSize = 2 * TEST_SIZE;
-        array.resize(greaterSize);
-        assertEquals(TEST_SIZE, array.size()); // size should remain unchanged
-
-        int lesserSize = TEST_SIZE / 2;
-        array.resize(lesserSize);
-        assertEquals(lesserSize, array.size()); // size should be truncated
-    }
-
-    @Test
-    void testPopRemove() {
-        Stack<Boolean> cache = new Stack<>();
-
-        for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
-            array.add(nextBit);
-            cache.push(nextBit);
-        }
-        assertEquals(cache.size(), array.size());
-
-        while (!array.isEmpty()) {
-            boolean arrayPop = array.remove(array.size()-1);
-            boolean cachePop = cache.pop();
-            assertEquals(cachePop, arrayPop);
+    void initArrays(int noOfElements) {
+        myArray = new BitArrayImpl();
+        arrayList.clear();
+        for (int i = 0; i < noOfElements; i++) {
+            boolean element = random.nextBoolean();
+            myArray.add(element);
+            arrayList.add(element);
         }
     }
 
+    void myAssertSameArrays() {
+        assertEquals(arrayList.size(), myArray.size());
+        for (int i = 0; i < myArray.size(); i++) {
+            assertEquals(arrayList.get(i), myArray.get(i));
+        }
+    }
+
+
     @Test
-    void testRandomRemove() {
-        ArrayList<Boolean> cache = new ArrayList<>(TEST_SIZE);
+    void addGet() {
+        initArrays(MAX_TEST_SIZE);
+        myAssertSameArrays();
+    }
 
-        for (int i=0; i<TEST_SIZE; i++) {
-            boolean nextBit = random.nextBoolean();
-            array.add(nextBit);
-            cache.add(nextBit);
+    @Test
+    void set() {
+        initArrays(MAX_TEST_SIZE);
+        for (int i = 0; i < myArray.size(); i++) {
+            boolean negatedElement = !myArray.get(i);
+            myArray.set(i, negatedElement);
         }
-        assertEquals(cache.size(), array.size());
+        arrayList = arrayList.stream().map(b -> !b).collect(Collectors.toCollection(ArrayList::new));
+        myAssertSameArrays();
+    }
 
-        while (!array.isEmpty()) {
-            int nextRemoveIndex = random.nextInt(array.size());
-            boolean arrayRemove = array.remove(nextRemoveIndex);
-            boolean cacheRemove = cache.remove(nextRemoveIndex);
-            assertEquals(cacheRemove, arrayRemove);
+    @Test
+    void remove() {
+        initArrays(MAX_TEST_SIZE);
+        for (int i = 0; i < MAX_TEST_SIZE && !myArray.isEmpty(); i++) {
+            int removeIndex = random.nextInt(myArray.size());
+            myArray.remove(removeIndex);
+            arrayList.remove(removeIndex);
         }
+        myAssertSameArrays();
+    }
+
+    @Test
+    void size() {
+        assertEquals(0, myArray.size());
+        initArrays(MAX_TEST_SIZE);
+        assertEquals(MAX_TEST_SIZE, myArray.size());
+        myArray.remove(0);
+        myArray.remove(0);
+        assertEquals(MAX_TEST_SIZE - 2, myArray.size());
+    }
+
+    @Test
+    void clear() {
+        initArrays(10);
+        myArray.clear();
+        assertEquals(0, myArray.size());
     }
 }
