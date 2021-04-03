@@ -154,21 +154,31 @@ class BitArrayTest {
         // remove all elements with next
         initArrays(100);
         bitIt = bitArray.listIterator();
+        // also check if it is the same as the ArrayList for every remove
+        ListIterator<Boolean> boolIt = boolArray.listIterator();
         while (bitIt.hasNext()) {
             bitIt.next();
+            boolIt.next();
             bitIt.remove();
+            boolIt.remove();
+            myAssertSameArrays();
         }
         assertEquals(0, bitArray.size());
 
         // remove all elements with previous
         initArrays(100);
         bitIt = bitArray.listIterator();
+        boolIt = boolArray.listIterator();
         while (bitIt.hasNext()) {
             bitIt.next();
+            boolIt.next();
         }
         while (bitIt.hasPrevious()) {
             bitIt.previous();
+            boolIt.previous();
             bitIt.remove();
+            boolIt.remove();
+            myAssertSameArrays();
         }
         assertEquals(0, bitArray.size());
     }
@@ -204,15 +214,46 @@ class BitArrayTest {
             bitIt.set(negatedValue);
         }
 
+        // negate bool array
         boolArray = boolArray.stream().map(b -> !b).collect(Collectors.toCollection(ArrayList::new));
         myAssertSameArrays();
     }
 
+    @Test
     void listIteratorAdd() {
         initArrays(100);
-        // clear bitArray
+        // clear bitArray and add every element to the bitArray using iterator
         bitArray = new BitArray();
-        // TODO
+        ListIterator<Boolean> it = bitArray.listIterator();
+
+        for (Boolean aBoolean : boolArray) {
+            it.add(aBoolean);
+        }
+        myAssertSameArrays();
+
+        // test if previous returns the newly added element
+        initArrays(0);
+        assertEquals(0, bitArray.size());
+        it = bitArray.listIterator();
+
+        for (int i=0; i<100; i++) {
+            Boolean element = rand.nextBoolean();
+            it.add(element);
+            assertEquals(element, it.previous());
+        }
+
+        // test that add does not move the cursor
+        initArrays(10);
+        it = bitArray.listIterator();
+
+        for (int i = 0; i < 100; i++) {
+            Boolean nextElement = it.next();
+            it.previous();
+            Boolean toAdd = !nextElement; // to make sure it is different
+            it.add(toAdd);
+            assertEquals(nextElement, it.next());
+            it.previous();
+        }
     }
 
     @Test
