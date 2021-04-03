@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BitArrayTest {
 
-    final static int TEST_SIZE = 9000;
+    final static int TEST_SIZE = 2000;
 
     static BitArray bitArray;
     static ArrayList<Boolean> boolArray;
@@ -46,29 +46,76 @@ class BitArrayTest {
 
 
     @Test
-    void addGet() {
+    void add() {
         initArrays(TEST_SIZE);
         myAssertSameArrays();
     }
 
     @Test
-    void set() {
+    void addIndex() {
+        initArrays(10);
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            int index = rand.nextInt(bitArray.size());
+            Boolean negatedElement = !bitArray.get(index);
+            bitArray.add(index, negatedElement);
+            boolArray.add(index, negatedElement);
+        }
+
+        myAssertSameArrays();
     }
 
     @Test
-    void testAdd() {
+    void set() {
+        initArrays(TEST_SIZE);
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            int index = rand.nextInt(bitArray.size());
+            Boolean negatedElement = !bitArray.get(index);
+            bitArray.set(index, negatedElement);
+            boolArray.set(index, negatedElement);
+        }
+
+        myAssertSameArrays();
     }
 
     @Test
     void remove() {
+        initArrays(TEST_SIZE);
+
+        for (int i = 0; i < TEST_SIZE; i++) {
+            int index = rand.nextInt(bitArray.size());
+            bitArray.remove(index);
+            boolArray.remove(index);
+        }
+
+        myAssertSameArrays();
+
+        while (!bitArray.isEmpty()) {
+            bitArray.remove(bitArray.size() - 1);
+            boolArray.remove(bitArray.size() - 1);
+        }
+        myAssertSameArrays();
     }
 
     @Test
     void indexOf() {
+        for (int i = 0; i < 10; i++) {
+            initArrays(10);
+            assertEquals(boolArray.indexOf(Boolean.FALSE), bitArray.indexOf(Boolean.FALSE));
+            assertEquals(boolArray.indexOf(Boolean.TRUE), bitArray.indexOf(Boolean.TRUE));
+        }
+        assertEquals(-1, bitArray.indexOf("not here"));
     }
 
     @Test
     void lastIndexOf() {
+        for (int i = 0; i < 10; i++) {
+            initArrays(10);
+            assertEquals(boolArray.lastIndexOf(Boolean.FALSE), bitArray.lastIndexOf(Boolean.FALSE));
+            assertEquals(boolArray.lastIndexOf(Boolean.TRUE), bitArray.lastIndexOf(Boolean.TRUE));
+        }
+        assertEquals(-1, bitArray.indexOf("not here"));
     }
 
     @Test
@@ -236,7 +283,7 @@ class BitArrayTest {
         assertEquals(0, bitArray.size());
         it = bitArray.listIterator();
 
-        for (int i=0; i<100; i++) {
+        for (int i = 0; i < 100; i++) {
             Boolean element = rand.nextBoolean();
             it.add(element);
             assertEquals(element, it.previous());
