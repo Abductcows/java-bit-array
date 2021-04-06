@@ -16,26 +16,43 @@
 
 package gr.geompokon.bitarray;
 
+/**
+ * Package private bit operation utility class for BitArrayImpl
+ */
 class ImplBitUtilities {
 
+    // number of bits in a long integer
     static final int BITS_PER_LONG = 64;
 
+
+    /**
+     * Returns the int value of the argument boolean; 0 for false and 1 for true
+     *
+     * @param bit boolean to be evaluated
+     * @return int value of the boolean
+     */
+    int bitIntValue(boolean bit) {
+        return Boolean.compare(bit, Boolean.FALSE);
+    }
+
+    /**
+     * Returns the boolean value of the argument int; false for 0 and 1 for everything else
+     *
+     * @param theInt the int to be evaluated
+     * @return boolean value of the int
+     */
+    boolean intBitValue(int theInt) {
+        return !(theInt == 0);
+    }
+
+    /**
+     * Returns a long bit mask with a single 1 at the {@code bitIndex} index
+     *
+     * @param bitIndex index of the 1 bit
+     * @return bit mask with only one bit set
+     */
     long getBitMask(int bitIndex) {
         return 1L << (BITS_PER_LONG - 1 - bitIndex);
-    }
-
-    long getSelectionMask(int index) {
-        return index == 0 ?
-                -1 :
-                getBitMask(index - 1) - 1;
-    }
-
-    long getBitsStartToIndexExclusive(int indexExclusive, long theLong) {
-        return theLong & (~getSelectionMask(indexExclusive));
-    }
-
-    long getBitsIndexToEnd(int index, long theLong) {
-        return theLong & getSelectionMask(index);
     }
 
     /**
@@ -46,10 +63,8 @@ class ImplBitUtilities {
      * @return int value of the bit
      */
     int getBitInLong(long theLong, int bitIndex) {
-        if ((theLong & getBitMask(bitIndex)) == 0) {
-            return 0;
-        }
-        return 1;
+        // position the bit at the rightmost part and extract it
+        return (int) (theLong >> (BITS_PER_LONG - 1 - bitIndex)) & 1;
     }
 
     /**
@@ -89,9 +104,8 @@ class ImplBitUtilities {
      * @return array containing the left and right part of the long
      */
     long[] splitLong(long theLong, int rightSideStart) {
-        long leftSide = getBitsStartToIndexExclusive(rightSideStart, theLong);
-        long rightSide = getBitsIndexToEnd(rightSideStart, theLong);
-
+        long rightSide = (theLong << rightSideStart) >>> rightSideStart;
+        long leftSide = theLong - rightSide;
         return new long[]{leftSide, rightSide};
     }
 }
