@@ -223,8 +223,16 @@ public class BitArrayImpl {
 
     private void ensureCapacity() {
         if (elements == data.length * ImplBitUtilities.BITS_PER_LONG) {
-            resize(2 * elements);
+            doubleSize();
         }
+    }
+
+    /**
+     * Doubles the size of the array by calling resize with argument 2 times
+     * the current amount of elements in the array
+     */
+    private void doubleSize() {
+        resize(2 * elements);
     }
 
     private void resize(int newSize) {
