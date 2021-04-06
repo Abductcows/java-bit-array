@@ -31,7 +31,7 @@ class ImplBitUtilities {
      * @param bit boolean to be evaluated
      * @return int value of the boolean
      */
-    int bitIntValue(boolean bit) {
+    int boolIntValue(boolean bit) {
         return Boolean.compare(bit, Boolean.FALSE);
     }
 
@@ -41,7 +41,7 @@ class ImplBitUtilities {
      * @param theInt the int to be evaluated
      * @return boolean value of the int
      */
-    boolean intBitValue(int theInt) {
+    boolean intBoolValue(int theInt) {
         return !(theInt == 0);
     }
 
@@ -51,7 +51,7 @@ class ImplBitUtilities {
      * @param bitIndex index of the 1 bit
      * @return bit mask with only one bit set
      */
-    long getBitMask(int bitIndex) {
+    long singleBitMask(int bitIndex) {
         return 1L << (BITS_PER_LONG - 1 - bitIndex);
     }
 
@@ -75,7 +75,7 @@ class ImplBitUtilities {
      * @return argument long with its target bit set to 1
      */
     long longWithSetBit(long theLong, int bitIndex) {
-        return theLong | getBitMask(bitIndex);
+        return theLong | singleBitMask(bitIndex);
     }
 
     /**
@@ -86,7 +86,7 @@ class ImplBitUtilities {
      * @return argument long with its target bit set to 0
      */
     long longWithClearedBit(long theLong, int bitIndex) {
-        return theLong & (~getBitMask(bitIndex));
+        return theLong & (~singleBitMask(bitIndex));
     }
 
     /**

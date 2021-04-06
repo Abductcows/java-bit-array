@@ -82,10 +82,8 @@ public class BitArrayImpl {
         // get index of the bit inside the long
         int indexInLong = getIndexInLong(index);
 
-        long onlySelectedBit = data[longIndex] & bitUtils.getBitMask(indexInLong);
-
-        // result of & is zero if-f the bit is zero
-        return onlySelectedBit != 0;
+        int selectedBit = bitUtils.getBitInLong(data[longIndex], indexInLong);
+        return bitUtils.intBoolValue(selectedBit);
     }
 
     public boolean set(int index, boolean bit) {
@@ -132,9 +130,9 @@ public class BitArrayImpl {
         int indexInLong = getIndexInLong(index);
 
         if (bit) {
-            data[longIndex] |= bitUtils.getBitMask(indexInLong);
+            data[longIndex] = bitUtils.longWithSetBit(data[longIndex], indexInLong);
         } else {
-            data[longIndex] &= ~bitUtils.getBitMask(indexInLong);
+            data[longIndex] = bitUtils.longWithClearedBit(data[longIndex], indexInLong);
         }
     }
 
@@ -142,7 +140,7 @@ public class BitArrayImpl {
         // start at current long index and work all the way to the last long
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
-        int bitIntValue = bit ? 1 : 0;
+        int bitIntValue = bitUtils.boolIntValue(bit);
         int rightmostBit = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
