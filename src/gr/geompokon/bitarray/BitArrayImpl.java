@@ -19,10 +19,9 @@ package gr.geompokon.bitarray;
 import java.util.Arrays;
 
 public class BitArrayImpl {
-    private final ImplBitUtilities bitUtils = new ImplBitUtilities();
+    private static final int DEFAULT_CAPACITY = ImplBitUtilities.BITS_PER_LONG;
 
-    private static final int BITS_PER_LONG = 64;
-    private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
+    private final ImplBitUtilities bitUtils = new ImplBitUtilities();
     private long[] data;
     private int elements; // number of elements in the array
 
@@ -40,7 +39,7 @@ public class BitArrayImpl {
     private void initMembers(int initialCapacity) {
         int sizeInLongs =
                 (int) Math.ceil(
-                        (double) initialCapacity / BITS_PER_LONG);
+                        (double) initialCapacity / ImplBitUtilities.BITS_PER_LONG);
         data = new long[sizeInLongs];
         elements = 0;
     }
@@ -121,11 +120,11 @@ public class BitArrayImpl {
 
 
     private int getLongIndex(int bitIndex) {
-        return bitIndex / BITS_PER_LONG;
+        return bitIndex / ImplBitUtilities.BITS_PER_LONG;
     }
 
     private int getIndexInLong(int bitIndex) {
-        return bitIndex % BITS_PER_LONG;
+        return bitIndex % ImplBitUtilities.BITS_PER_LONG;
     }
 
     private void setBit(int index, boolean bit) {
@@ -223,7 +222,7 @@ public class BitArrayImpl {
     }
 
     private void ensureCapacity() {
-        if (elements == data.length * BITS_PER_LONG) {
+        if (elements == data.length * ImplBitUtilities.BITS_PER_LONG) {
             resize(2 * elements);
         }
     }
@@ -237,7 +236,7 @@ public class BitArrayImpl {
         }
         // make sure to create enough longs for new size
         int newSizeInLongs = (int) Math.ceil(
-                (double) newSize / BITS_PER_LONG);
+                (double) newSize / ImplBitUtilities.BITS_PER_LONG);
 
         // copy data
         data = Arrays.copyOf(data, newSizeInLongs);

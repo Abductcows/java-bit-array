@@ -1,8 +1,11 @@
 package gr.geompokon.bitarray;
 
 class ImplBitUtilities {
+
+    static final int BITS_PER_LONG = 64;
+
     long getBitMask(int bitIndex) {
-        return 1L << (63 - bitIndex);
+        return 1L << (BITS_PER_LONG - 1 - bitIndex);
     }
 
     long getSelectionMask(int index) {
