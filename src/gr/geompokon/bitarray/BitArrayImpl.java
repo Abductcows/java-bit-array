@@ -57,12 +57,14 @@ public class BitArrayImpl {
         // check for append
         if (index == elements) {
             setBit(elements, bit);
-        } else {
-            int longIndex = getLongIndex(index);
-            int indexInLong = getIndexInLong(index);
-            addAndShiftAllRight(bit, longIndex, indexInLong);
+            elements = elements + 1;
+            return;
         }
 
+        // else insert normally
+        int longIndex = getLongIndex(index);
+        int indexInLong = getIndexInLong(index);
+        addAndShiftAllRight(bit, longIndex, indexInLong);
         elements = elements + 1;
     }
 
