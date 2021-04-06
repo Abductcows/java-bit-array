@@ -19,6 +19,7 @@ package gr.geompokon.bitarray;
 import java.util.Arrays;
 
 public class BitArrayImpl {
+    private final ImplBitUtilities bitUtils = new ImplBitUtilities();
 
     private static final int BITS_PER_LONG = 64;
     private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
@@ -82,7 +83,7 @@ public class BitArrayImpl {
         // get index of the bit inside the long
         int indexInLong = getIndexInLong(index);
 
-        long onlySelectedBit = data[longIndex] & getBitMask(indexInLong);
+        long onlySelectedBit = data[longIndex] & bitUtils.getBitMask(indexInLong);
 
         // result of & is zero if-f the bit is zero
         return onlySelectedBit != 0;
@@ -132,9 +133,9 @@ public class BitArrayImpl {
         int indexInLong = getIndexInLong(index);
 
         if (bit) {
-            data[longIndex] |= getBitMask(indexInLong);
+            data[longIndex] |= bitUtils.getBitMask(indexInLong);
         } else {
-            data[longIndex] &= ~getBitMask(indexInLong);
+            data[longIndex] &= ~bitUtils.getBitMask(indexInLong);
         }
     }
 
@@ -161,9 +162,9 @@ public class BitArrayImpl {
      */
     private int insertInLongShiftRight(int bit, int longIndex, int indexInLong) {
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        long leftSide = bitUtils.getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
         // get right side [indexInLong : ], can not be empty, will be shifted
-        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
+        long rightSide = bitUtils.getBitsIndexToEnd(indexInLong, data[longIndex]);
 
         // save LSB
         int rightSideLSB = (int) rightSide & 1;
@@ -171,7 +172,7 @@ public class BitArrayImpl {
         rightSide >>>= 1;
         // new bit is 0 from the shift, change it to 1 if required
         if (bit == 1) {
-            rightSide |= getBitMask(indexInLong);
+            rightSide |= bitUtils.getBitMask(indexInLong);
         }
         // re-join the two parts
         data[longIndex] = leftSide + rightSide;
@@ -194,14 +195,14 @@ public class BitArrayImpl {
 
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        long leftSide = bitUtils.getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
         // get right side [indexInLong : ], can not be empty, will be shifted
-        long rightSide = getBitsIndexToEnd(indexInLong, data[longIndex]);
+        long rightSide = bitUtils.getBitsIndexToEnd(indexInLong, data[longIndex]);
 
         // save MSB
-        int rightSideMSB = (int) (rightSide & getBitMask(indexInLong));
+        int rightSideMSB = (int) (rightSide & bitUtils.getBitMask(indexInLong));
         // clear MSB and shift to the left to make it disappear
-        rightSide &= ~getBitMask(indexInLong);
+        rightSide &= ~bitUtils.getBitMask(indexInLong);
         rightSide <<= 1;
         // append the previous bit
         rightSide += bit;
@@ -211,24 +212,6 @@ public class BitArrayImpl {
 
         // return the MSB
         return rightSideMSB == 0 ? rightSideMSB : 1;
-    }
-
-    private long getBitMask(int bitIndex) {
-        return 1L << (63 - bitIndex);
-    }
-
-    private long getSelectionMask(int index) {
-        return index == 0 ?
-                -1 :
-                getBitMask(index - 1) - 1;
-    }
-
-    private long getBitsStartToIndexExclusive(int indexExclusive, long theLong) {
-        return theLong & (~getSelectionMask(indexExclusive));
-    }
-
-    private long getBitsIndexToEnd(int index, long theLong) {
-        return theLong & getSelectionMask(index);
     }
 
     private void ensureIndexInRange(int index, int endInclusive) {
