@@ -161,10 +161,11 @@ public class BitArrayImpl {
      * @return LSB of the long before insertion
      */
     private int insertInLongShiftRight(int bit, int longIndex, int indexInLong) {
+        long[] splitLong = bitUtils.splitLong(data[longIndex], indexInLong);
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = bitUtils.getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        long leftSide = splitLong[0];
         // get right side [indexInLong : ], can not be empty, will be shifted
-        long rightSide = bitUtils.getBitsIndexToEnd(indexInLong, data[longIndex]);
+        long rightSide = splitLong[1];
 
         // save LSB
         int rightSideLSB = (int) rightSide & 1;
@@ -172,7 +173,7 @@ public class BitArrayImpl {
         rightSide >>>= 1;
         // new bit is 0 from the shift, change it to 1 if required
         if (bit == 1) {
-            rightSide |= bitUtils.getBitMask(indexInLong);
+            rightSide = bitUtils.longWithSetBit(rightSide, indexInLong);
         }
         // re-join the two parts
         data[longIndex] = leftSide + rightSide;
@@ -194,15 +195,16 @@ public class BitArrayImpl {
     }
 
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
+        long[] splitLong = bitUtils.splitLong(data[longIndex], indexInLong);
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = bitUtils.getBitsStartToIndexExclusive(indexInLong, data[longIndex]);
+        long leftSide = splitLong[0];
         // get right side [indexInLong : ], can not be empty, will be shifted
-        long rightSide = bitUtils.getBitsIndexToEnd(indexInLong, data[longIndex]);
+        long rightSide = splitLong[1];
 
         // save MSB
-        int rightSideMSB = (int) (rightSide & bitUtils.getBitMask(indexInLong));
+        int rightSideMSB = bitUtils.getBitInLong(rightSide, indexInLong);
         // clear MSB and shift to the left to make it disappear
-        rightSide &= ~bitUtils.getBitMask(indexInLong);
+        rightSide = bitUtils.longWithClearedBit(rightSide, indexInLong);
         rightSide <<= 1;
         // append the previous bit
         rightSide += bit;
