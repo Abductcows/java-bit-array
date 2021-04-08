@@ -27,6 +27,9 @@ class BitArrayImpl {
     private long[] data; // long array storing the bit entries
     private int elements; // number of elements in the array
 
+    /**
+     * Default constructor
+     */
     BitArrayImpl() {
         this(DEFAULT_CAPACITY);
     }
@@ -218,6 +221,13 @@ class BitArrayImpl {
         return bitUtils.intBoolValue(bit);
     }
 
+    /**
+     * Adds the bit at the array index and shifts every entry to its right to the right
+     *
+     * @param bit         the new bit to be added
+     * @param longIndex   index of the long of the insertion index
+     * @param indexInLong index of the bit in the long of the insertion
+     */
     private void addAndShiftAllRight(boolean bit, int longIndex, int indexInLong) {
         // start at current long index and work all the way to the last long
         int maxLongIndex = getLongIndex(elements);
@@ -231,11 +241,15 @@ class BitArrayImpl {
     }
 
     /**
-     * Inserts the bit in the index of the long specified by the arguments and then shifts
-     * everything to its right to the right. The LSB that is shifted out is returned.
+     * Inserts the bit in the index of the long specified by the arguments and shifts the previous LSB out.
+     *
+     * <p>
+     * Inserting at any index is done by splitting the long word in two parts and rejoining them after shifting and
+     * setting the new bit. The LSB that is shifted out is returned.
+     * </p>
      *
      * @param bit         the bit to be inserted
-     * @param longIndex   index of the long in the data array
+     * @param longIndex   index of the long in the {@code data} array
      * @param indexInLong index of the bit in the long
      * @return LSB of the long before insertion
      */
@@ -261,6 +275,12 @@ class BitArrayImpl {
         return rightSideLSB;
     }
 
+    /**
+     * Removes the bit at the array index and shifts everything to its right to the left
+     *
+     * @param longIndex   index of the long of the remove index
+     * @param indexInLong index of the bit in the long of the removal
+     */
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(elements - 1);
@@ -273,6 +293,19 @@ class BitArrayImpl {
         appendLongShiftLeft(leftmostBit, longIndex, indexInLong);
     }
 
+    /**
+     * Appends the bit at the end of the long specified by the arguments and removes the bit at {@code indexInLong}
+     *
+     * <p>
+     * Since {@code indexInLong} can be at the middle of the long word, removing the bit is done by splitting the
+     * long in two parts, clearing the desired bit and shifting once to restore the order of the previous bits
+     * </p>
+     *
+     * @param bit         the bit to be appended to the long
+     * @param longIndex   index of the long in the {@code data} array
+     * @param indexInLong index of the bit in the long
+     * @return bit at {@code longIndex} that was popped out
+     */
     private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
         long[] splitLong = bitUtils.splitLong(data[longIndex], indexInLong);
         // get left side [0 : indexInLong), can be empty, will remain intact
