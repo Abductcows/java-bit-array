@@ -18,27 +18,72 @@ package gr.geompokon.bitarray;
 
 import java.util.Arrays;
 
+/**
+ * Class that models an array of boolean values. The aim of this class is to minimise memory allocation.
+ *
+ * <p>
+ * The "magic trick" here is the fact that an n-bit integer can store n bits. We map each bit to its boolean value,
+ * namely 0 to false and 1 to true. Therefore we can represent n independent boolean values if we can access and
+ * modify them separately.
+ * </p>
+ * <p>
+ * The class uses an array of {@code long} primitives to store the bits to maximise efficiency of bulk operations such as
+ * shifts and array resizes. The bit array is by all means an array; elements in the array have contiguous indices.
+ * Insertions and removals shift necessary elements to preserve that property. Array accesses are random access because
+ * the index of a bit in the data array can be determined by an integer division.
+ * </p>
+ * <p>
+ * A bit more on the accessing part: Because we are grouping bits in groups of 64, we need to modify our array accessing
+ * but only internally; clients should be specifying absolute array indices and we need to know which long that index
+ * corresponds to. Thanks to papa Euclid we know that there are unique q and r such that {@code i = 64 * q + r}.
+ * We use {@code q} to specify the long in the {@link #data} array and {@code r} to specify which bit we are looking for.
+ * </p>
+ * <p>
+ * Normal indices are referred to as "global" or "absolute" when a distinction should be made. Also, bits and booleans
+ * are sometimes used interchangeably.
+ * </p>
+ * <p>
+ * This class is package private in order to be used by the public class, {@link BitArray} which extends
+ * {@link java.util.AbstractList}.
+ * </p>
+ *
+ * @author George Bouroutzoglou (geompokon@csd.auth.gr)
+ */
 class BitArrayImpl {
-    // utility bitwise operation class
-    private static final ImplBitUtilities bitUtils = new ImplBitUtilities();
-    // default capacity (in bit entries)
-    private static final int DEFAULT_CAPACITY = ImplBitUtilities.BITS_PER_LONG;
-
-    private long[] data; // long array storing the bit entries
-    private int elements; // number of elements in the array
 
     /**
-     * Default constructor
+     * Utility bitwise operation object.
+     */
+    private static final ImplBitUtilities bitUtils = new ImplBitUtilities(); // utility bitwise operation object
+
+    /**
+     * Default array capacity in bit entries.
+     */
+    private static final int DEFAULT_CAPACITY = ImplBitUtilities.BITS_PER_LONG;
+
+    /**
+     * {@code long} array storing the bit entries.
+     */
+    private long[] data;
+
+    /**
+     * Current number of elements in the array.
+     */
+    private int elements;
+
+    /**
+     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}.
      */
     BitArrayImpl() {
         this(DEFAULT_CAPACITY);
     }
 
     /**
-     * Initialises the array to store at least {@code initialCapacity} elements.
+     * Initialises the array to store at least {@code initialCapacity} bits before resizing.
+     *
      * <p>
      * Actual memory size of the array in bits is rounded up to the next multiple of 64.
-     * The array should not resize before that number of elements have been inserted
+     * The array should not resize before {@code initialCapacity} elements have been inserted.
      * </p>
      *
      * @param initialCapacity initial capacity of the array in bit entries
@@ -51,7 +96,7 @@ class BitArrayImpl {
     }
 
     /**
-     * Initialises every field of the object.
+     * Initialises the array as a freshly created array. {@link #elements} should be 0 after a call to this.
      *
      * @param initialCapacity initial capacity of the array in bit entries
      */
@@ -67,11 +112,8 @@ class BitArrayImpl {
 
     /**
      * Inserts the boolean value as a bit at the argument index.
-     * <p>
-     * Insertions at {@code size()} are allowed as appends
-     * </p>
      *
-     * @param index the index of the insertion
+     * @param index global array index of the insertion
      * @param bit   the bit to be inserted
      * @throws IndexOutOfBoundsException if index is out of array insertion bounds
      */
@@ -97,7 +139,7 @@ class BitArrayImpl {
     }
 
     /**
-     * Returns the boolean value of the bit at the selected array index
+     * Returns the boolean value of the bit at the selected array index.
      *
      * @param index global index of the bit in the array
      * @return boolean value of the bit entry
@@ -115,11 +157,12 @@ class BitArrayImpl {
     }
 
     /**
-     * Sets the bit at the specified index to the desired value and returns the old value
+     * Sets the bit at the specified index to the desired value and returns the old value.
      *
-     * @param index index of the array element to be changed
+     * @param index global index of the array element to be changed
      * @param bit   the new value of the array element
      * @return boolean value of the previous bit at that index
+     * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     boolean set(int index, boolean bit) {
         // check for index out of bounds
@@ -137,10 +180,11 @@ class BitArrayImpl {
     }
 
     /**
-     * Removes the bit at the specified array index
+     * Removes the bit at the specified array index.
      *
-     * @param index index of the element
+     * @param index global index of the element
      * @return boolean value of the removed bit
+     * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     boolean remove(int index) {
         // check for index out of bounds
@@ -161,7 +205,9 @@ class BitArrayImpl {
     }
 
     /**
-     * Returns the number of elements in the array
+     * Returns the number of elements in the array.
+     *
+     * @return number of elements in the array
      */
     int size() {
         return elements;
@@ -169,14 +215,14 @@ class BitArrayImpl {
 
     /**
      * Clears the contents of the array. Previous {@code data} memory should be available for
-     * garbage collection after a call to this method
+     * garbage collection after a call to this method.
      */
     void clear() {
         initMembers(DEFAULT_CAPACITY);
     }
 
     /**
-     * Returns the index of the long in the {@code data} array that contains the bit at {@code bitIndex}
+     * Returns the index of the long in the {@code data} array that contains the bit at {@code bitIndex}.
      *
      * @param bitIndex global index of the bit in the array
      * @return index of the long housing the bit
@@ -186,11 +232,11 @@ class BitArrayImpl {
     }
 
     /**
-     * Used in conjunction with {@link #getLongIndex(int bitIndex)}. Returns the index of the bit in the long's bits
+     * Used in conjunction with {@link #getLongIndex(int bitIndex)}. Returns the index of the bit in the long's bits.
      *
      * <p>
      * Long refers to the long at the index returned by {@link #getLongIndex(int)}. Indices start counting
-     * from 0 to {@link ImplBitUtilities#BITS_PER_LONG} - 1 from left to right
+     * from 0 to {@link ImplBitUtilities#BITS_PER_LONG} - 1 from left to right.
      * </p>
      *
      * @param bitIndex global index of the bit in the array
@@ -201,7 +247,11 @@ class BitArrayImpl {
     }
 
     /**
-     * Sets the argument bit at the location specified by the long indices
+     * Sets the argument bit at the location specified by the long indices.
+     *
+     * @param longIndex   index of the long in the data array
+     * @param indexInLong index of the bit in the long
+     * @param bit         new bit to replace the previous entry at that index
      */
     private void setBit(int longIndex, int indexInLong, boolean bit) {
         if (bit) {
@@ -212,7 +262,11 @@ class BitArrayImpl {
     }
 
     /**
-     * Returns the bit at the long indices
+     * Returns the bit at the location specified by the long indices.
+     *
+     * @param longIndex   index of the long in the data array
+     * @param indexInLong index of the bit in the long
+     * @return the bit at the specified location
      */
     private boolean getBit(int longIndex, int indexInLong) {
         // get the bit
@@ -222,7 +276,7 @@ class BitArrayImpl {
     }
 
     /**
-     * Adds the bit at the array index and shifts every entry to its right to the right
+     * Adds the bit at the array index and shifts every entry to its right to the right.
      *
      * @param bit         the new bit to be added
      * @param longIndex   index of the long of the insertion index
@@ -276,7 +330,7 @@ class BitArrayImpl {
     }
 
     /**
-     * Removes the bit at the array index and shifts everything to its right to the left
+     * Removes the bit at the array index and shifts everything to its right to the left.
      *
      * @param longIndex   index of the long of the remove index
      * @param indexInLong index of the bit in the long of the removal
@@ -294,11 +348,11 @@ class BitArrayImpl {
     }
 
     /**
-     * Appends the bit at the end of the long specified by the arguments and removes the bit at {@code indexInLong}
+     * Appends the bit at the end of the long specified by the arguments and removes the bit at {@code indexInLong}.
      *
      * <p>
      * Since {@code indexInLong} can be at the middle of the long word, removing the bit is done by splitting the
-     * long in two parts, clearing the desired bit and shifting once to restore the order of the previous bits
+     * long in two parts, clearing the desired bit and shifting once to restore the order of the previous bits.
      * </p>
      *
      * @param bit         the bit to be appended to the long
@@ -329,7 +383,7 @@ class BitArrayImpl {
     }
 
     /**
-     * Checks for index out of bounds
+     * Checks for index out of bounds.
      *
      * @param index        index to be checked
      * @param endInclusive last allowed value of the index
@@ -341,10 +395,10 @@ class BitArrayImpl {
     }
 
     /**
-     * Extends the array size to store at least one more element
+     * Extends the array size to store at least one more element.
      *
      * <p>
-     * Doubling of size preferred
+     * Doubling of size preferred.
      * </p>
      */
     private void ensureCapacity() {
@@ -354,14 +408,14 @@ class BitArrayImpl {
     }
 
     /**
-     * Doubles the size of the array
+     * Doubles the size of the array.
      */
     private void doubleSize() {
         resize(2 * elements);
     }
 
     /**
-     * Resizes the array. Number of elements is updated in case of truncation
+     * Resizes the array. Number of elements is updated in case of truncation.
      *
      * @param newSize new size in bit entries
      */
