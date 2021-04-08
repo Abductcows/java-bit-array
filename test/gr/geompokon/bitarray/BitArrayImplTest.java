@@ -64,6 +64,9 @@ class BitArrayImplTest {
         myAssertSameArrays();
     }
 
+    /**
+     * Tests set by setting all elements to their complementary values
+     */
     @Test
     void set() {
         initArrays(MAX_TEST_SIZE);
@@ -71,14 +74,18 @@ class BitArrayImplTest {
             boolean negatedElement = !myArray.get(i);
             myArray.set(i, negatedElement);
         }
+
         arrayList = arrayList.stream().map(b -> !b).collect(Collectors.toCollection(ArrayList::new));
         myAssertSameArrays();
     }
 
+    /**
+     * Random index removal test
+     */
     @Test
     void remove() {
         initArrays(MAX_TEST_SIZE);
-        for (int i = 0; i < MAX_TEST_SIZE && !(myArray.size() == 0); i++) {
+        for (int i = 0; i < MAX_TEST_SIZE; i++) {
             int removeIndex = random.nextInt(myArray.size());
             myArray.remove(removeIndex);
             arrayList.remove(removeIndex);
