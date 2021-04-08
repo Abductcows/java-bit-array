@@ -45,7 +45,7 @@ class BitArrayImplTest {
         arrayList.clear();
         for (int i = 0; i < noOfElements; i++) {
             boolean element = random.nextBoolean();
-            myArray.add(element);
+            myArray.add(myArray.size(), element);
             arrayList.add(element);
         }
     }
@@ -78,7 +78,7 @@ class BitArrayImplTest {
     @Test
     void remove() {
         initArrays(MAX_TEST_SIZE);
-        for (int i = 0; i < MAX_TEST_SIZE && !myArray.isEmpty(); i++) {
+        for (int i = 0; i < MAX_TEST_SIZE && !(myArray.size() == 0); i++) {
             int removeIndex = random.nextInt(myArray.size());
             myArray.remove(removeIndex);
             arrayList.remove(removeIndex);
