@@ -17,13 +17,28 @@
 package gr.geompokon.bitarray;
 
 /**
- * Package private bit operation utility class for BitArrayImpl
+ * Package private bit operation utility class for {@link BitArrayImpl}
+ *
+ * @author George Bouroutzoglou (geompokon@csd.auth.gr)
  */
 class ImplBitUtilities {
 
-    // number of bits in a long integer
+    /**
+     * Constant declaring the number of bits in a long integer.
+     *
+     * <p>
+     * Used to calculate boundaries in the indices of the bits in a long word and to count how many longs are needed
+     * to store a certain number of bits.
+     * </p>
+     */
     static final int BITS_PER_LONG = 64;
 
+    /**
+     * Default constructor
+     */
+    ImplBitUtilities() {
+
+    }
 
     /**
      * Returns the int value of the argument boolean; 0 for false and 1 for true
@@ -93,9 +108,9 @@ class ImplBitUtilities {
      * Returns the two longs as the result of splitting the argument long in two parts using the {@code rightSideStart}
      * argument as an index.
      * <p>
-     * Result is {left, right} where
-     * The left part of the result is all bits before {@code rightSideStart} (it is possible to be 0 bits)
-     * The right part of the result is all bits from {@code rightSideStart} to the end
+     * Result is {left, right} where:<br>
+     * The left part of the result is all bits before {@code rightSideStart} (could be empty).<br>
+     * The right part of the result is all bits from {@code rightSideStart} to the end.
      * <p>
      * Note that the bits are returned as-is and are not shifted so {@code left + right == theLong} is always true
      *
