@@ -21,8 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,11 +33,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BitArrayVsArrayListBenchmarkTest {
     static long testSeed;
     static long startTime, duration;
-    static AbstractList<Boolean> bitArray = new BitArray();
-    static AbstractList<Boolean> boolArray = new ArrayList<>();
+    static List<Boolean> bitArray = new BitArray();
+    static List<Boolean> boolArray = new ArrayList<>();
 
     static Random rand = new Random();
-    static final int RANDOM_ADD_SIZE = 5_000_000;
+    static final int RANDOM_ADD_SIZE = 1_000_000;
     static final int APPEND_SIZE = 250_000_000;
     static final int RANDOM_REMOVE_SIZE = 1_000_000; // dont try anything more than 10m with arraylist
 
@@ -100,8 +100,8 @@ public class BitArrayVsArrayListBenchmarkTest {
         // ArrayList<Boolean>
         setUpBoolArray();
         for (int i = 0; i < RANDOM_ADD_SIZE; i++) {
-            int nextIndex = rand.nextInt(bitArray.size() + 1);
-            bitArray.add(nextIndex, rand.nextBoolean());
+            int nextIndex = rand.nextInt(boolArray.size() + 1); // different size() methods called in the two loops, expect some error
+            boolArray.add(nextIndex, rand.nextBoolean());
         }
         stopTimerAndPrint();
         assertEquals(RANDOM_ADD_SIZE, bitArray.size());
@@ -204,7 +204,7 @@ public class BitArrayVsArrayListBenchmarkTest {
         // ArrayList<Boolean>
         setUpBoolArray();
         for (int i = 0; i < RANDOM_REMOVE_SIZE; i++) {
-            int removeIndex = rand.nextInt(boolArray.size()); // different size() methods called in the two loops, expect some error
+            int removeIndex = rand.nextInt(boolArray.size());
             boolArray.remove(removeIndex);
         }
         stopTimerAndPrint();
