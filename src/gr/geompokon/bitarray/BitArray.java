@@ -122,6 +122,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     public void add(int index, Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements);
+        modCount++;
         ensureCapacity();
 
         // get bit indices
@@ -168,6 +169,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     public Boolean set(int index, Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(0, elements - 1);
+        modCount++;
         // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -189,6 +191,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      */
     public Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
+        modCount++;
 
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -218,6 +221,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      * garbage collection after a call to this method.
      */
     public void clear() {
+        modCount++;
         initMembers(DEFAULT_CAPACITY);
     }
 
