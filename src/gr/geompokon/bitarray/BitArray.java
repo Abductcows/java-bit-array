@@ -439,7 +439,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      * @return long bit mask with the specific bit set
      */
     private long singleBitMask(int bitIndex) {
-        return 1L << (BITS_PER_LONG - 1 - bitIndex);
+        return Long.MIN_VALUE >>> bitIndex;
     }
 
     /**
