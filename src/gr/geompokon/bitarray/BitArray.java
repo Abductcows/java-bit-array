@@ -487,7 +487,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return deep copy of {@code this}
      */
-    public Object clone() {
+    public BitArray clone() {
         return new BitArray(this);
     }
 
