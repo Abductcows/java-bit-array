@@ -39,7 +39,7 @@ import java.util.*;
  *
  * @author George Bouroutzoglou (geompokon@csd.auth.gr)
  */
-public class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
+public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
 
     /**
      * Number of bits in a long integer
@@ -88,11 +88,27 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     /**
      * Builds the array from the specified collection in the order specified by its iterator
      *
+     * <p>
+     * Copy of collection without {@code addAll()} for BitArray types
+     * </p>
+     *
      * @param other the collection supplying the elements
      * @throws NullPointerException if the collection is null
      */
     public BitArray(Collection<? extends Boolean> other) {
         Objects.requireNonNull(other);
+
+        // fast copy for BitArray
+        if (other instanceof BitArray) {
+            BitArray otherBitArray = (BitArray) other;
+            int longsToCopy = longsRequiredForNBits(otherBitArray.elements);
+
+            this.data = Arrays.copyOf(otherBitArray.data, longsToCopy);
+            this.elements = otherBitArray.elements;
+            return;
+        }
+
+        // standard copy
         initMembers(other.size());
         this.addAll(other);
     }
@@ -104,9 +120,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      */
     private void initMembers(int initialCapacity) {
         // allocate enough longs for the number of bits required
-        int sizeInLongs =
-                (int) Math.ceil(
-                        (double) initialCapacity / BITS_PER_LONG);
+        int sizeInLongs = longsRequiredForNBits(initialCapacity);
         // init the array and set number of elements to 0
         data = new long[sizeInLongs];
         elements = 0;
@@ -122,6 +136,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     public void add(int index, Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements);
+        modCount++;
         ensureCapacity();
 
         // get bit indices
@@ -168,6 +183,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     public Boolean set(int index, Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(0, elements - 1);
+        modCount++;
         // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -189,6 +205,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      */
     public Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
+        modCount++;
 
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -218,6 +235,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
      * garbage collection after a call to this method.
      */
     public void clear() {
+        modCount++;
         initMembers(DEFAULT_CAPACITY);
     }
 
@@ -423,8 +441,7 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
             return;
         }
         // make sure to create enough longs for new size
-        int newSizeInLongs = (int) Math.ceil(
-                (double) newSize / BITS_PER_LONG);
+        int newSizeInLongs = longsRequiredForNBits(newSize);
 
         // copy data
         data = Arrays.copyOf(data, newSizeInLongs);
@@ -455,18 +472,23 @@ public class BitArray extends AbstractList<Boolean> implements RandomAccess, Clo
     }
 
     /**
+     * Returns the smallest number of longs needed to contain {@code nBits} bits.
+     *
+     * @param nBits the number of bits
+     * @return ceil division of {@code nBits} with {@link #BITS_PER_LONG}
+     */
+    private int longsRequiredForNBits(int nBits) {
+        return (int) Math.ceil(
+                (double) nBits / BITS_PER_LONG);
+    }
+
+    /**
      * Returns a deep copy of this object
      *
      * @return deep copy of {@code this}
      */
-    public Object clone() {
-        BitArray result = new BitArray(this.size());
-
-        int longsOccupied = (int) Math.ceil(
-                (double) elements / BITS_PER_LONG);
-        result.data = Arrays.copyOf(this.data, longsOccupied);
-        result.elements = this.elements;
-
-        return result;
+    public BitArray clone() {
+        return new BitArray(this);
     }
+
 }
