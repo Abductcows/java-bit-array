@@ -31,7 +31,7 @@ import java.util.*;
  * so for the time being, you should check the BitArrayVsArrayListBenchmarkTest.java benchmark file.
  * </p>
  * <p>
- * Note that methods that explicitly return a {@code Collection} or {@code Stream} of the elements will NOT follow the
+ * Note that methods that explicitly return a new {@code Collection} of the elements will NOT follow the
  * one bit per entry principle. In general you are mostly meant to process elements individually or sequentially in
  * operations. That said, every {@link java.util.AbstractList} operation is supported and works with
  * {@link java.util.ArrayList<Boolean>} in mind.
@@ -69,11 +69,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Initialises the array to store at least {@code initialCapacity} bits before resizing.
+     * Initialises the array to store at least {@code initialCapacity} elements before resizing.
      *
      * <p>
      * Actual memory size of the array in bits is rounded up to the next multiple of 64.
-     * The array should not resize before {@code initialCapacity} elements have been inserted.
      * </p>
      *
      * @param initialCapacity initial capacity of the array in bit entries
@@ -129,8 +128,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Inserts the boolean value as a bit at the argument index.
      *
-     * @param index global array index of the insertion
-     * @param bit   the bit to be inserted
+     * @param index array index to insert the element in
+     * @param bit   the boolean value to be inserted
      * @throws IndexOutOfBoundsException if index is out of array insertion bounds
      */
     public void add(int index, Boolean bit) {
@@ -158,7 +157,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Returns the boolean value of the bit at the selected array index.
      *
-     * @param index global index of the bit in the array
+     * @param index index of the element in the array
      * @return boolean value of the bit entry
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
@@ -173,11 +172,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Sets the bit at the specified index to the desired value and returns the old value.
+     * Sets the boolean value of the element at the specified index to the desired value and returns the old value.
      *
-     * @param index global index of the array element to be changed
+     * @param index index of the array element to be changed
      * @param bit   the new value of the array element
-     * @return Boolean value of the previous bit at that index
+     * @return boolean value of the previous bit at that index
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     public Boolean set(int index, Boolean bit) {
@@ -199,7 +198,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Removes the bit at the specified array index.
      *
-     * @param index global index of the element
+     * @param index index of the element
      * @return boolean value of the removed bit
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
@@ -231,8 +230,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Clears the contents of the array. Previous {@code data} memory should be available for
-     * garbage collection after a call to this method.
+     * Clears the contents of the array and releases memory used previously.
      */
     public void clear() {
         modCount++;
@@ -305,15 +303,15 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
         int bitIntValue = Boolean.compare(bit, Boolean.FALSE);
-        int rightmostBit = insertInLongShiftRight(bitIntValue, longIndex++, indexInLong);
+        int rightmostBit = insertInLong(bitIntValue, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
-            rightmostBit = insertInLongShiftRight(rightmostBit, longIndex++, 0);
+            rightmostBit = insertInLong(rightmostBit, longIndex++, 0);
         }
     }
 
     /**
-     * Inserts the bit in the index of the long specified by the arguments and shifts the previous LSB out.
+     * Inserts the bit in the index of the long specified by the arguments and returns the previous LSB.
      *
      * <p>
      * Inserting at any index is done by splitting the long word in two parts and rejoining them after shifting and
@@ -325,7 +323,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the bit in the long
      * @return LSB of the long before insertion
      */
-    private int insertInLongShiftRight(int bit, int longIndex, int indexInLong) {
+    private int insertInLong(int bit, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
         // get left side [0 : indexInLong), can be empty, will remain intact
@@ -356,10 +354,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
-            leftmostBit = appendLongShiftLeft(leftmostBit, currentLongIndex--, 0);
+            leftmostBit = appendBitAndRemoveAtIndex(leftmostBit, currentLongIndex--, 0);
         }
         // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
-        appendLongShiftLeft(leftmostBit, longIndex, indexInLong);
+        appendBitAndRemoveAtIndex(leftmostBit, longIndex, indexInLong);
     }
 
     /**
@@ -375,7 +373,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the bit in the long
      * @return bit at {@code longIndex} that was popped out
      */
-    private int appendLongShiftLeft(int bit, int longIndex, int indexInLong) {
+    private int appendBitAndRemoveAtIndex(int bit, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
         // get left side [0 : indexInLong), can be empty, will remain intact
