@@ -81,8 +81,8 @@ public class BitArrayVsArrayListBenchmarkTest {
 
     void stopTimerAndPrint() {
         duration = System.nanoTime() - startTime;
-        System.out.printf("%d ns | %d seconds\n",
-                duration, Duration.ofNanos(duration).toSeconds());
+        System.out.printf("%d ns | %.2f seconds\n",
+                duration, duration / 1_000_000_000.0);
     }
 
     @Test
