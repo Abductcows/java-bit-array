@@ -20,7 +20,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -143,7 +142,7 @@ public class BitArrayVsArrayListBenchmarkTest {
         setUpBitArray();
         for (int i = 0; i < APPEND_SIZE; i++) {
             int getIndex = rand.nextInt(arraySize);
-            bitArray.get(getIndex);
+            boolean b = bitArray.get(getIndex);
         }
         stopTimerAndPrint();
         bitArray.clear(); // clear to free memory
@@ -152,7 +151,7 @@ public class BitArrayVsArrayListBenchmarkTest {
         setUpBoolArray();
         for (int i = 0; i < APPEND_SIZE; i++) {
             int getIndex = rand.nextInt(arraySize);
-            boolArray.get(getIndex);
+            boolean b = boolArray.get(getIndex);
         }
         stopTimerAndPrint();
     }
