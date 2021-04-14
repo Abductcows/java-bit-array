@@ -480,6 +480,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
                 (double) nBits / BITS_PER_LONG);
     }
 
+
+    /*
+        BitArray specific methods
+    */
+
     /**
      * Returns a deep copy of this object
      *
@@ -489,4 +494,86 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return new BitArray(this);
     }
 
+    /**
+     * Serializes the array into a string.
+     *
+     * <p>
+     * The string consists of the number of elements in the array and a list of the elements in a human readable
+     * format. Exact representation is "Size = SIZE, [((0 | 1) + ' ')*]" where SIZE is a non negative integer and
+     * the list of elements consists of opening square brackets ([), zero or more bits (single digit ones or zeros)
+     * separated by spaces and closing square brackets.
+     * </p>
+     * <p>
+     * Examples:<br>
+     * Size = 7, [1 1 1 0 1 1 1]<br>
+     * Size = 4, [0 0 0 0]<br>
+     * Size = 0, []
+     * </p>
+     *
+     * @return String representation of the array and its elements
+     */
+    public String toString() {
+        StringBuilder s = new StringBuilder(this.size() * 2);
+
+        // write size of the array
+        s.append("Size = ").append(this.size()).append(", ");
+
+        // write the list of bits as 1s and 0s
+        s.append('[');
+        for (int i = 0; i < this.size() - 1; i++) {
+            s.append(Boolean.compare(this.get(i), Boolean.FALSE));
+            s.append(' ');
+        }
+        if (size() > 0) {
+            s.append(Boolean.compare(this.get(this.size() - 1), Boolean.FALSE));
+        }
+        s.append(']');
+
+        return s.toString();
+    }
+
+    /**
+     * Constructs the BitArray from the serialized String representation given
+     *
+     * @param stringArray array in String format as returned by {@link #toString()}
+     * @return new BitArray instance with the String array's contents
+     * @throws UnknownFormatConversionException if string parsing fails
+     */
+    public static BitArray fromString(String stringArray) {
+
+        String start = "Size = ";
+
+        if (!stringArray.startsWith(start)) {
+            throw new UnknownFormatConversionException("Not a valid BitArray string");
+        }
+
+        // count number of digits of the array size
+        int currentIndex = start.length();
+        while (stringArray.charAt(currentIndex) != ',') {
+            currentIndex++;
+        }
+
+        int arraySize;
+        try {
+            String arraySizeStr = stringArray.substring(start.length(), currentIndex);
+            arraySize = Integer.parseInt(arraySizeStr);
+        } catch (IndexOutOfBoundsException | NumberFormatException e) {
+            throw new UnknownFormatConversionException("Not a valid BitArray string");
+        }
+
+        // move the cursor to the first element
+        currentIndex += ", [".length();
+
+        // read elements
+        BitArray result = new BitArray(arraySize);
+        for (int i = 0; i < arraySize; i++) {
+            if (currentIndex >= stringArray.length() - 1) {
+                throw new UnknownFormatConversionException("Not a valid BitArray string");
+            }
+            result.add(stringArray.charAt(currentIndex) == '1');
+            currentIndex += 2;
+        }
+
+        return result;
+    }
 }

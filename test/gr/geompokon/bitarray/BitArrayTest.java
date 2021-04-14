@@ -65,9 +65,26 @@ class BitArrayTest {
     @Test
     void testClone() {
         initArrays(MAX_TEST_SIZE);
-        BitArray clone = (BitArray) bitArray.clone();
+        BitArray clone = bitArray.clone();
 
         assertEquals(clone, bitArray);
         assertEquals(bitArray, clone);
+    }
+
+    @Test
+    void testToFromString() {
+        // test array with elements
+        initArrays(MAX_TEST_SIZE);
+        String bitArrayStr = bitArray.toString();
+        BitArray copy = BitArray.fromString(bitArrayStr);
+
+        assertEquals(bitArray, copy);
+
+
+        // test empty array
+        bitArrayStr = new BitArray().toString();
+        copy = BitArray.fromString(bitArrayStr);
+
+        assertEquals(new BitArray(), copy);
     }
 }
