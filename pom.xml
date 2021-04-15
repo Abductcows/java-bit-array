@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>BitArray</name>
+    <description>Java List of Booleans class with reduced memory usage and higher performance</description>
     <url>https://github.com/Abductcows/java-bit-array</url>
     <inceptionYear>2021</inceptionYear>
 
@@ -36,11 +37,25 @@
                 <version>2.22.0</version>
                 <configuration>
                     <excludes>
-                        <exclude> BitArrayVsArrayListBenchmarkTest.java </exclude>
+                        <exclude>BitArrayVsArrayListBenchmarkTest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/java/</directory>
+                <includes>
+                    <include>**/*.java</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>LICENSE</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
     <licenses>
