@@ -19,25 +19,42 @@ package gr.geompokon.bitarray;
 import java.util.*;
 
 /**
- * Class that models an array of {@code Booleans} with the {@link java.util.List} interface. The aim of this array is to
- * minimize memory required for storage of the {@code Boolean} elements.
+ * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
  *
  * <p>
- * The Boolean elements of this array are stored as bits inside of {@code long} primitives. Therefore until queried,
- * each element takes no more than one bit in memory. The aim here is scalability. Memory conservation scales linearly
- * with the number of elements. This could be crucial in some specialised applications where Java was selected for some
- * reason. Additionally, due to its particular nature, this data structure can offer a performance advantage over
- * {@link java.util.ArrayList<Boolean>} in normal add/remove/set operations. This javadoc section is bound to be updated
- * so for the time being, you should check the BitArrayVsArrayListBenchmarkTest.java benchmark file.
+ * The aim of this class is to enhance the performance of common operations such as {@code add}, {@code remove} and
+ * {@code set} while also minimizing its memory footprint. This class was made explicitly to replace {@link ArrayList}
+ * when working with {@code Boolean} elements.
  * </p>
+ *
  * <p>
- * Note that methods that explicitly return a new {@code Collection} of the elements will NOT follow the
- * one bit per entry principle. In general you are mostly meant to process elements individually or sequentially in
- * operations. That said, every {@link java.util.AbstractList} operation is supported and works with
- * {@link java.util.ArrayList<Boolean>} in mind.
+ * Memory conservation and higher performance stem from the particular case of dealing with {@code Boolean} elements.
+ * The array stores each boolean as its bit equivalent (0 for false and 1 for true) inside of an array of long primitives.
+ * Therefore shifts of multiple elements and array copying can be done en masse, all while elements occupy less memory
+ * when in storage.
+ * </p>
+ *
+ * <p>
+ * A glimpse of the future:<br><br>
+ * <code>
+ * List&lt;Boolean&gt; elements = new ArrayList&lt;&gt;(); // rookie mistake, not worth it
+ * </code><br>
+ * changes to:<br>
+ * <code>
+ * List&lt;Boolean&gt; elements = new BitArray(); // no convoluted diamond operator, superior performance
+ * </code>
+ * </p>
+ *
+ * <p>
+ * Note that methods that explicitly return a new {@code Collection} of the elements will not follow the
+ * one bit per entry principle.
  * </p>
  *
  * @author George Bouroutzoglou (geompokon@csd.auth.gr)
+ * @version 1.0.0
+ * @see java.util.List
+ * @see java.util.AbstractList
+ * @see java.util.ArrayList
  */
 public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
 
