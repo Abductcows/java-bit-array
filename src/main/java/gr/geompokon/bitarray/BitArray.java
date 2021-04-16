@@ -198,7 +198,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public Boolean set(int index, Boolean bit) {
         Objects.requireNonNull(bit);
-        ensureIndexInRange(0, elements - 1);
+        ensureIndexInRange(index, elements - 1);
         modCount++;
         // get bit indices
         int longIndex = getLongIndex(index);
