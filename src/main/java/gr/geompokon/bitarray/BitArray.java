@@ -37,7 +37,7 @@ import java.util.*;
  * <p>
  * A glimpse of the future:<br><br>
  * <code>
- * List&lt;Boolean&gt; elements = new ArrayList&lt;&gt;(); // rookie mistake, not worth it
+ * List&lt;Boolean&gt; elements = new ArrayList&lt;&gt;(); // rookie mistake
  * </code><br>
  * changes to:<br>
  * <code>
@@ -46,8 +46,8 @@ import java.util.*;
  * </p>
  *
  * <p>
- * Note that methods that explicitly return a new {@code Collection} of the elements will not follow the
- * one bit per entry principle.
+ * Note that methods that explicitly return a new {@code Collection} of the elements (other than {@code subList}) will
+ * not follow the one bit per entry principle.
  * </p>
  *
  * @author George Bouroutzoglou (geompokon@csd.auth.gr)
