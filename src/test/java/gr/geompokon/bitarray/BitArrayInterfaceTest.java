@@ -23,17 +23,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BitArrayInterfaceTest {
 
-    final static int MAX_TEST_SIZE = 500;
+    final static int MAX_TEST_SIZE = 200;
 
     static List<Boolean> bitArray;
     static List<Boolean> boolArray;
     static Random random;
 
+    /**
+     * Start each test with a fresh array
+     */
     @BeforeEach
     void setUp() {
         bitArray = new BitArray();
@@ -64,10 +66,13 @@ class BitArrayInterfaceTest {
         assertEquals(boolArray, bitArray);
     }
 
+    /**
+     * Random insertions at random indices
+     */
     @Test
     void addAtIndex() {
         for (int i = 0; i < MAX_TEST_SIZE; i++) {
-            int index = random.nextInt(bitArray.size() + 1);
+            int index = random.nextInt(bitArray.size() + 1); // bound is exclusive
             boolean element = random.nextBoolean();
             bitArray.add(index, element);
             boolArray.add(index, element);
@@ -75,13 +80,20 @@ class BitArrayInterfaceTest {
         myAssertSameArrays();
     }
 
+    /**
+     * Modification of elements at random indices
+     */
     @Test
     void set() {
+        // test empty array behaviour
+        assertThrows(Exception.class, () -> bitArray.set(0, true));
+
+        // test with elements
         initArrays(MAX_TEST_SIZE);
 
         for (int i = 0; i < MAX_TEST_SIZE; i++) {
             int index = random.nextInt(bitArray.size());
-            Boolean negatedElement = !bitArray.get(index);
+            Boolean negatedElement = !bitArray.get(index); // to ensure contents change
             bitArray.set(index, negatedElement);
             boolArray.set(index, negatedElement);
         }
@@ -89,8 +101,15 @@ class BitArrayInterfaceTest {
         myAssertSameArrays();
     }
 
+    /**
+     * Remove of elements at random indices
+     */
     @Test
     void remove() {
+        // test empty array behaviour
+        assertThrows(Exception.class, () -> bitArray.remove(0));
+
+        // test with elements
         initArrays(MAX_TEST_SIZE);
 
         for (int i = 0; i < MAX_TEST_SIZE && !bitArray.isEmpty(); i++) {
@@ -116,17 +135,23 @@ class BitArrayInterfaceTest {
 
     @Test
     void size() {
+        // test newly created array size
+        assertEquals(0, bitArray.size());
+
+        // add some elements
         initArrays(MAX_TEST_SIZE);
         int expectedSize = MAX_TEST_SIZE;
         assertEquals(expectedSize, bitArray.size());
 
+        // remove some
         int noToRemove = MAX_TEST_SIZE / 2;
         bitArray.subList(0, noToRemove).clear();
 
         expectedSize -= noToRemove;
         assertEquals(expectedSize, bitArray.size());
 
-        int noToAdd = 100;
+        // add back some
+        int noToAdd = MAX_TEST_SIZE / 2;
         for (int i = 0; i < noToAdd; i++) {
             bitArray.add(random.nextBoolean());
         }
