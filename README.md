@@ -1,5 +1,36 @@
-# java-bit-array
+# Java BitArray
 
-Java array of bit values that uses 1 bit per entry
+[![Open Issues][open-issues-shield]][open-issues-url]
+[![Contributors][contributors-shield]][contributors-url]
 
-Proper readme, Javadoc and first release coming soon
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[open-issues-url]: https://github.com/Abductcows/java-bit-array/issues
+[open-issues-shield]: https://img.shields.io/github/issues/abductcows/java-bit-array
+[contributors-url]: https://github.com/Abductcows/java-bit-array/graphs/contributors
+[contributors-shield]: https://img.shields.io/github/contributors/abductcows/java-bit-array
