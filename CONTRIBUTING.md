@@ -2,7 +2,7 @@
 
 Thank you for taking an interest in this project. You can contribute by writing code to fix/extend the features or use/test the class itself. 
 
-You should start by [creating an issue](https://github.com/Abductcows/java-bit-array/issues) and relaying your idea or findings.
+You should start by [creating an issue](https://github.com/Abductcows/java-bit-array/issues) and relaying your idea or findings. You can find issue templates [here](https://github.com/Abductcows/java-bit-array/issues/new/choose) but using them is not mandatory. 
 
 
 ### Bug reports
