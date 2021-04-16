@@ -26,12 +26,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BitArrayTest {
 
-    final static int MAX_TEST_SIZE = 500;
+    final static int MAX_TEST_SIZE = 200;
 
     static BitArray bitArray;
     static ArrayList<Boolean> boolArray;
     static Random random;
 
+    /**
+     * Start each test with a fresh array
+     */
     @BeforeEach
     void setUp() {
         bitArray = new BitArray();
@@ -62,12 +65,23 @@ class BitArrayTest {
         assertEquals(boolArray, bitArray);
     }
 
+    /**
+     * Make the bit array from the boolean array
+     */
+    @Test
+    void testCopyConstructor() {
+        initArrays(MAX_TEST_SIZE);
+        bitArray.clear();
+
+        bitArray = new BitArray(boolArray);
+        myAssertSameArrays();
+    }
+
     @Test
     void testClone() {
         initArrays(MAX_TEST_SIZE);
         BitArray clone = bitArray.clone();
 
-        assertEquals(clone, bitArray);
         assertEquals(bitArray, clone);
     }
 
