@@ -22,9 +22,9 @@ import java.util.*;
  * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
  *
  * <p>
- * The aim of this class is to enhance the performance of common operations such as {@code add}, {@code remove} and
- * {@code set} while also minimizing its memory footprint. This class was made explicitly to replace {@link java.util.ArrayList}
- * when working with {@code Boolean} elements.
+ * This class was made explicitly to replace {@link java.util.ArrayList} when working with {@code Boolean} elements.
+ * It aims to enhance the performance of common operations such as {@code add}, {@code remove} and {@code set} while
+ * also minimizing its memory footprint.
  * </p>
  *
  * <p>
@@ -78,7 +78,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}.
+     * Default constructor. Sets initial capacity to 64
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -515,9 +515,9 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * <p>
      * The string consists of the number of elements in the array and a list of the elements in a human readable
-     * format. Exact representation is "Size = SIZE, [((0 | 1) + ' ')*]" where SIZE is a non negative integer and
-     * the list of elements consists of opening square brackets ([), zero or more bits (single digit ones or zeros)
-     * separated by spaces and closing square brackets.
+     * format. Exact representation is "Size = SIZE, [(((0 | 1) + ' ')* (0 | 1))?]" where SIZE is a non negative integer
+     * and '+' is the concatenation operator. The list of elements consists of opening square brackets ([), zero or more
+     * bits (single digit ones or zeros) separated by spaces and closing square brackets.
      * </p>
      * <p>
      * Examples:<br>
