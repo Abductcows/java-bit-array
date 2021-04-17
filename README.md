@@ -34,6 +34,9 @@ I would like to work on this project with anyone willing to contribute. My estim
 
 If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abductcows/java-bit-array/blob/master/CONTRIBUTING.md) for more info.
 
+### License
+This Project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
 ### Authors
 - *George Bouroutzoglou* (geompokon@csd.auth.gr)
 
