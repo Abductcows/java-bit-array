@@ -22,9 +22,9 @@ import java.util.*;
  * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
  *
  * <p>
- * The aim of this class is to enhance the performance of common operations such as {@code add}, {@code remove} and
- * {@code set} while also minimizing its memory footprint. This class was made explicitly to replace {@link ArrayList}
- * when working with {@code Boolean} elements.
+ * This class was made explicitly to replace {@link java.util.ArrayList} when working with {@code Boolean} elements.
+ * It aims to enhance the performance of common operations such as {@code add}, {@code remove} and {@code set} while
+ * also minimizing its memory footprint.
  * </p>
  *
  * <p>
@@ -50,7 +50,6 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @author George Bouroutzoglou (geompokon@csd.auth.gr)
  * @version 1.0.0
  * @see java.util.List
  * @see java.util.AbstractList
@@ -79,7 +78,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}.
+     * Default constructor. Sets initial capacity to 64
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -109,7 +108,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * </p>
      *
      * @param other the collection supplying the elements
-     * @throws NullPointerException if the collection is null
+     * @throws java.lang.NullPointerException if the collection is null
      */
     public BitArray(Collection<? extends Boolean> other) {
         Objects.requireNonNull(other);
@@ -147,7 +146,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @param index array index to insert the element in
      * @param bit   the boolean value to be inserted
-     * @throws IndexOutOfBoundsException if index is out of array insertion bounds
+     * @throws java.lang.IndexOutOfBoundsException if index is out of array insertion bounds
      */
     public void add(int index, Boolean bit) {
         Objects.requireNonNull(bit);
@@ -194,7 +193,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param index index of the array element to be changed
      * @param bit   the new value of the array element
      * @return boolean value of the previous bit at that index
-     * @throws IndexOutOfBoundsException if index is out of array bounds
+     * @throws java.lang.IndexOutOfBoundsException if index is out of array bounds
      */
     public Boolean set(int index, Boolean bit) {
         Objects.requireNonNull(bit);
@@ -516,9 +515,9 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * <p>
      * The string consists of the number of elements in the array and a list of the elements in a human readable
-     * format. Exact representation is "Size = SIZE, [((0 | 1) + ' ')*]" where SIZE is a non negative integer and
-     * the list of elements consists of opening square brackets ([), zero or more bits (single digit ones or zeros)
-     * separated by spaces and closing square brackets.
+     * format. Exact representation is "Size = SIZE, [(((0 | 1) + ' ')* (0 | 1))?]" where SIZE is a non negative integer
+     * and '+' is the concatenation operator. The list of elements consists of opening square brackets ([), zero or more
+     * bits (single digit ones or zeros) separated by spaces and closing square brackets.
      * </p>
      * <p>
      * Examples:<br>
