@@ -4,6 +4,10 @@
 [![Open Issues][open-issues-shield]][open-issues-url]&nbsp;&nbsp;
 [![Contributors][contributors-shield]][contributors-url]
 
+### TL;DR: Faster List&lt;Boolean&gt; than ArrayList with the same exact behaviour. 
+- [Documentation](https://abductcows.github.io/java-bit-array/gr/geompokon/bitarray/BitArray.html) 
+- [Release](https://github.com/Abductcows/java-bit-array/releases/latest)
+
 ### Motivation
 This class is a replacement for the `ArrayList<Boolean>` type when working with its `List` interface. It boasts higher performance in add, remove and set operations and requires less memory for storing the same elements. 
 
@@ -13,13 +17,13 @@ The BitArray is by all means an array; it is random access and all elements have
 Internally the array stores the boolean elements in an array of long primitives. These long primitives essentially form a sequence of bits; their chained bit representation in 2's complement. Boolean elements are converted to and from their bit equivalent to perform insertions, deletions etc. With the appropriate bitwise operations new elements can be added at a specific index and elements already in the array can be shifted to preserve the previous order. Thanks to that hack, element shifting and array resizing is much cheaper, all while the elements themselves occupy less space in memory.
 
 ### Performance
-With regard to the difference in performance, I have a [temporary benchmark](https://github.com/Abductcows/java-bit-array/blob/dev/src/test/java/gr/geompokon/bitarray/BitArrayVsArrayListBenchmarkTest.java) file for you to test. I am looking into creating a more trustworthy benchmark using a benchmark framework like [JMH](https://github.com/openjdk/jmh) in order to be able to publish some results with confidence. If you have experience doing that and want to contribute, feel free to start an [issue](https://github.com/Abductcows/java-bit-array/issues).
+With regard to the difference in performance, I have included a [temporary benchmark](https://github.com/Abductcows/java-bit-array/blob/dev/src/test/java/gr/geompokon/bitarray/BitArrayVsArrayListBenchmarkTest.java) file for you to test. A conservative report on my findings based on that is that this array is about 4-5 times faster in random index `add` and `remove` operations. `get` and `set` run at about the same time. I am looking into creating a more trustworthy benchmark using a benchmark framework like [JMH](https://github.com/openjdk/jmh) in order to be able to publish some results with confidence. If you have experience doing that and want to contribute, feel free to start an [issue](https://github.com/Abductcows/java-bit-array/issues).
 
 ### Disclaimer
-As you can tell from the project version and creation date this class is very new and not battle-tested. As such I would discourage you from using it in a serious application just yet.
+As you can tell from the project version and creation date, this class is very new and not battle-tested. As such I would discourage you from using it in a serious application just yet.
 
 # Getting Started
-You will need the class and source files. You can grab the [latest release](https://github.com/Abductcows/java-bit-array/releases/latest) (built for jdk-11) or download the project and run `mvn package/install` yourself. Releases contain a zip file with separate jars for classes, sources and javadoc. Include at least the class jar in your project and you will be able to use the BitArray. Looks like you are good to go.
+You will need the class and source files. You can grab the [latest release](https://github.com/Abductcows/java-bit-array/releases/latest) (built with jdk-11) or download the project and run `mvn package/install` yourself. Releases contain a zip file with separate jars for classes, sources and javadoc. Include at least the class jar in your project and you will be able to use the BitArray. Looks like you are good to go.
 
 ### Versioning
 The project uses [SemVer](https://semver.org/) for versioning.
