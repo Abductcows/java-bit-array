@@ -50,7 +50,7 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.0.0
+ * @version 1.0.1
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList
@@ -430,6 +430,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * </p>
      */
     private void ensureCapacity() {
+        // check for completely full array
+        if (elements == Integer.MAX_VALUE) {
+            throw new IllegalStateException("Cannot insert; array is completely full. Size = " + size());
+        }
+        // extend if currently full
         if (elements == data.length * BITS_PER_LONG) {
             doubleSize();
         }
@@ -439,7 +444,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Doubles the size of the array.
      */
     private void doubleSize() {
-        resize(2 * elements);
+        // make sure new element count does not overflow
+        // we can't index more than Integer.MAX_VALUE elements through the List interface anyway
+        int newSize = (int) Math.min(2L * elements, Integer.MAX_VALUE);
+        resize(newSize);
     }
 
     /**
