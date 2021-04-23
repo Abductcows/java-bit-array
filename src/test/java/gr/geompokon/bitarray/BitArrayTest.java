@@ -59,10 +59,12 @@ class BitArrayTest {
     }
 
     /**
-     * Asserts that the two arrays have the exact same contents
+     * Asserts that the two lists have the same exact contents
      */
     void myAssertSameArrays() {
-        assertEquals(boolArray, bitArray);
+        for (int i = 0; i < boolArray.size(); i++) {
+            assertEquals(boolArray.get(i), bitArray.get(i));
+        }
     }
 
     /**
