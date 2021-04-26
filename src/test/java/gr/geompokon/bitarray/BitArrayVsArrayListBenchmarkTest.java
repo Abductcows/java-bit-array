@@ -142,7 +142,7 @@ public class BitArrayVsArrayListBenchmarkTest {
         setUpBitArray();
         for (int i = 0; i < APPEND_SIZE; i++) {
             int getIndex = rand.nextInt(arraySize);
-            boolean b = bitArray.get(getIndex);
+            Boolean b = bitArray.get(getIndex);
         }
         stopTimerAndPrint();
         bitArray.clear(); // clear to free memory
@@ -151,7 +151,7 @@ public class BitArrayVsArrayListBenchmarkTest {
         setUpBoolArray();
         for (int i = 0; i < APPEND_SIZE; i++) {
             int getIndex = rand.nextInt(arraySize);
-            boolean b = boolArray.get(getIndex);
+            Boolean b = boolArray.get(getIndex);
         }
         stopTimerAndPrint();
     }
