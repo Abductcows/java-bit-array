@@ -364,47 +364,44 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(elements - 1);
-        int leftmostBit = 0; // dud value for first shift
+        long leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
-            leftmostBit = appendBitAndRemoveAtIndex(leftmostBit, currentLongIndex--, 0);
+            leftmostBit = removeAtIndexAndAppend(leftmostBit, 1, currentLongIndex--, 0);
         }
-        // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
-        appendBitAndRemoveAtIndex(leftmostBit, longIndex, indexInLong);
+        // add the final MSB as LSB of longIndex and shift only the bits to the popped bit's right
+        removeAtIndexAndAppend(leftmostBit, 1, longIndex, indexInLong);
     }
 
     /**
-     * Appends the bit at the end of the long specified by the arguments and removes the bit at {@code indexInLong}.
+     * Removes the {@code lastLength} bits from the long specified by {@code longIndex} starting from {@code indexInLong}
+     * and then appends the same length of bits from {@code lastValue} at the end of the long. The
      *
-     * <p>
-     * Since {@code indexInLong} can be at the middle of the long word, removing the bit is done by splitting the
-     * long in two parts, clearing the desired bit and shifting once to restore the order of the previous bits.
-     * </p>
-     *
-     * @param bit         the bit to be appended to the long
+     * @param lastValue   bits to be appended to the long
+     * @param lastLength  length in bits of the last value
      * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the bit in the long
-     * @return bit at {@code longIndex} that was popped out
+     * @param indexInLong index of the first removed bit in the long
+     * @return bits that were popped from the long
      */
-    private int appendBitAndRemoveAtIndex(int bit, int longIndex, int indexInLong) {
+    private long removeAtIndexAndAppend(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = data[longIndex] - rightSide;
+        long leftSide = data[longIndex] & ~rightSide;
 
-        // save MSB
-        int rightSideMSB = getBitInLong(rightSide, indexInLong);
-        // clear MSB and shift to the left to make it "disappear"
-        rightSide &= ~singleBitMask(indexInLong);
-        rightSide <<= 1;
-        // append the previous bit
-        rightSide += bit;
+        // save removed values
+        long poppedValues = selectBits(rightSide, indexInLong, lastLength) >>> (BITS_PER_LONG - indexInLong - lastLength);
+
+        // clear copied bits and shift to the left
+        rightSide = (rightSide << indexInLong + lastLength) >>> indexInLong;
+        // append the previous bits
+        rightSide |= lastValue;
 
         // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
+        data[longIndex] = leftSide ^ rightSide;
 
-        // return the MSB
-        return rightSideMSB;
+        // return the popped bits
+        return poppedValues;
     }
 
     /**
