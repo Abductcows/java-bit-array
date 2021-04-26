@@ -318,43 +318,41 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
         int bitIntValue = Boolean.compare(bit, Boolean.FALSE);
-        int rightmostBit = insertInLong(bitIntValue, longIndex++, indexInLong);
+        long rightmostBit = insertInLong(bitIntValue, 1, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
-            rightmostBit = insertInLong(rightmostBit, longIndex++, 0);
+            rightmostBit = insertInLong(rightmostBit, 1, longIndex++, 0);
         }
     }
 
     /**
-     * Inserts the bit in the index of the long specified by the arguments and returns the previous LSB.
+     * Inserts the {@code lastLength} rightmost bits of lastValue in the position specified by {@code longIndex} and
+     * {@code indexInLong}, and then shifts every element with index >= {@code indexInLong} to the right. The bits that
+     * are shifted out are returned in the leftmost position
      *
-     * <p>
-     * Inserting at any index is done by splitting the long word in two parts and rejoining them after shifting and
-     * setting the new bit. The LSB that is shifted out is returned.
-     * </p>
-     *
-     * @param bit         the bit to be inserted
+     * @param lastValue   bits to be inserted into the long
+     * @param lastLength  length in bits of the last value
      * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the bit in the long
-     * @return LSB of the long before insertion
+     * @param indexInLong index of the insertion bit in the long
+     * @return bits that were shifted out due to the insertion
      */
-    private int insertInLong(int bit, int longIndex, int indexInLong) {
-        // get right side [indexInLong : ], can not be empty, will be shifted
+    private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
+        // select the bits [indexInLong, (word end)] for the insertion
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
-        // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = data[longIndex] - rightSide;
+        // separate the left part, this will remain intact
+        long leftSide = data[longIndex] & ~rightSide;
 
-        // save LSB
-        long rightSideLSB = rightSide & 1L;
-        // unsigned shift to the right to make space for the new bit
-        rightSide >>>= 1;
-        // set the new bit
-        rightSide |= (long) bit << (BITS_PER_LONG - 1 - indexInLong);
+        // save the bits that will be shifted out
+        long rightSideShiftOut = selectBits(rightSide, BITS_PER_LONG - lastLength, lastLength);
+        // unsigned shift to the right to make space for the new bits
+        rightSide >>>= lastLength;
+        // set the new bits
+        rightSide |= lastValue << (BITS_PER_LONG - lastLength - indexInLong);
         // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
+        data[longIndex] = leftSide ^ rightSide;
 
-        // return the LSB
-        return (int) rightSideLSB;
+        // return the discarded bits
+        return rightSideShiftOut;
     }
 
     /**
@@ -407,6 +405,25 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
         // return the MSB
         return rightSideMSB;
+    }
+
+    /**
+     * Returns a long bit mask with ones only in the range [start, start + length)
+     *
+     * @param start  start index of the selection
+     * @param length number of set bits in the result
+     * @return bit mask covering the range specified
+     * @implSpec <p>
+     * {@code start} should be in the range [0, 63]<br>
+     * {@code length} should be in the range [1, 64]<br>
+     * {@code start} and {@code length} should satisfy: start + length <= {@link #BITS_PER_LONG}
+     * </p>
+     */
+    private long selectBits(long aLong, int start, int length) {
+        long mask = Long.MIN_VALUE >>> start; // need at least the first bit
+        mask |= (Long.MIN_VALUE >>> start) - 1; // make everything to the right ones
+        mask &= -(Long.MIN_VALUE >>> (start + length - 1)); // make everything from end of length and forward 0
+        return aLong & mask;
     }
 
     /**
@@ -502,7 +519,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return (int) Math.ceil(
                 (double) nBits / BITS_PER_LONG);
     }
-
 
     /*
         BitArray specific methods
