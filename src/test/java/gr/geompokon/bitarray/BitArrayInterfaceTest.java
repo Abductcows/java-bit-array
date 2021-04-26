@@ -88,7 +88,7 @@ class BitArrayInterfaceTest {
     @Test
     void set() {
         // test empty array behaviour
-        assertThrows(Exception.class, () -> bitArray.set(0, true));
+        assertThrows(IndexOutOfBoundsException.class, () -> bitArray.set(0, true));
 
         // test with elements
         initArrays(MAX_TEST_SIZE);
@@ -109,23 +109,14 @@ class BitArrayInterfaceTest {
     @Test
     void remove() {
         // test empty array behaviour
-        assertThrows(Exception.class, () -> bitArray.remove(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> bitArray.remove(0));
 
         // test with elements
         initArrays(MAX_TEST_SIZE);
-
-        for (int i = 0; i < MAX_TEST_SIZE && !bitArray.isEmpty(); i++) {
-            int index = random.nextInt(bitArray.size());
-            bitArray.remove(index);
-            boolArray.remove(index);
+        for (int i = 0; i < MAX_TEST_SIZE; i++) {
+            int index = random.nextInt(boolArray.size());
+            assertEquals(boolArray.remove(index), bitArray.remove(index));
         }
-        myAssertSameArrays();
-
-        while (!bitArray.isEmpty()) {
-            bitArray.remove(bitArray.size() - 1);
-            boolArray.remove(bitArray.size() - 1);
-        }
-        myAssertSameArrays();
     }
 
     @Test
