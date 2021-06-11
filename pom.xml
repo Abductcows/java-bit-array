@@ -7,7 +7,7 @@
 
     <groupId>gr.geompokon</groupId>
     <artifactId>bit-array</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
 
     <name>BitArray</name>
     <description>Java List of Booleans class with reduced memory usage and higher performance</description>
@@ -25,6 +25,14 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.1.0</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.1.0</version>
+            <scope>test</scope>
             <optional>true</optional>
         </dependency>
     </dependencies>

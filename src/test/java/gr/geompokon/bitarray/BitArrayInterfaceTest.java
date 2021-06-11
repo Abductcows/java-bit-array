@@ -17,7 +17,9 @@
 package gr.geompokon.bitarray;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +28,6 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BitArrayInterfaceTest {
-
-    final static int MAX_TEST_SIZE = 200;
 
     static List<Boolean> bitArray;
     static List<Boolean> boolArray;
@@ -63,15 +63,19 @@ class BitArrayInterfaceTest {
      * Asserts that the two lists have the same exact contents
      */
     void myAssertSameArrays() {
-        assertEquals(boolArray, bitArray);
+        for (int i = 0; i < boolArray.size(); i++) {
+            assertEquals(boolArray.get(i), bitArray.get(i));
+        }
     }
 
     /**
      * Random insertions at random indices
      */
-    @Test
-    void addAtIndex() {
-        for (int i = 0; i < MAX_TEST_SIZE; i++) {
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Lists should be the same when doing the same insertions")
+    void addAtIndex(int elementsToAdd) {
+        for (int i = 0; i < elementsToAdd; i++) {
             int index = random.nextInt(bitArray.size() + 1); // bound is exclusive
             boolean element = random.nextBoolean();
             bitArray.add(index, element);
@@ -83,15 +87,17 @@ class BitArrayInterfaceTest {
     /**
      * Modification of elements at random indices
      */
-    @Test
-    void set() {
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Lists should be the same when doing the same set operations")
+    void set(int elementsToAdd) {
         // test empty array behaviour
-        assertThrows(Exception.class, () -> bitArray.set(0, true));
+        assertThrows(IndexOutOfBoundsException.class, () -> bitArray.set(0, true));
 
         // test with elements
-        initArrays(MAX_TEST_SIZE);
+        initArrays(elementsToAdd);
 
-        for (int i = 0; i < MAX_TEST_SIZE; i++) {
+        for (int i = 0; i < elementsToAdd; i++) {
             int index = random.nextInt(bitArray.size());
             Boolean negatedElement = !bitArray.get(index); // to ensure contents change
             bitArray.set(index, negatedElement);
@@ -104,58 +110,35 @@ class BitArrayInterfaceTest {
     /**
      * Remove of elements at random indices
      */
-    @Test
-    void remove() {
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Lists should be the same at any point while doing the same removes")
+    void remove(int elementsToAdd) {
         // test empty array behaviour
-        assertThrows(Exception.class, () -> bitArray.remove(0));
+        assertThrows(IndexOutOfBoundsException.class, () -> bitArray.remove(0));
 
         // test with elements
-        initArrays(MAX_TEST_SIZE);
-
-        for (int i = 0; i < MAX_TEST_SIZE && !bitArray.isEmpty(); i++) {
-            int index = random.nextInt(bitArray.size());
-            bitArray.remove(index);
-            boolArray.remove(index);
+        initArrays(elementsToAdd);
+        for (int i = 0; i < elementsToAdd; i++) {
+            int index = random.nextInt(boolArray.size());
+            assertEquals(boolArray.remove(index), bitArray.remove(index));
         }
-        myAssertSameArrays();
-
-        while (!bitArray.isEmpty()) {
-            bitArray.remove(bitArray.size() - 1);
-            boolArray.remove(bitArray.size() - 1);
-        }
-        myAssertSameArrays();
     }
 
-    @Test
-    void clear() {
-        initArrays(10);
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Cleared array should be empty")
+    void clear(int elementsToAdd) {
+        initArrays(elementsToAdd);
         bitArray.clear();
         assertTrue(bitArray.isEmpty());
     }
 
-    @Test
-    void size() {
-        // test newly created array size
-        assertEquals(0, bitArray.size());
-
-        // add some elements
-        initArrays(MAX_TEST_SIZE);
-        int expectedSize = MAX_TEST_SIZE;
-        assertEquals(expectedSize, bitArray.size());
-
-        // remove some
-        int noToRemove = MAX_TEST_SIZE / 2;
-        bitArray.subList(0, noToRemove).clear();
-
-        expectedSize -= noToRemove;
-        assertEquals(expectedSize, bitArray.size());
-
-        // add back some
-        int noToAdd = MAX_TEST_SIZE / 2;
-        for (int i = 0; i < noToAdd; i++) {
-            bitArray.add(random.nextBoolean());
-        }
-        expectedSize += noToAdd;
-        assertEquals(expectedSize, bitArray.size());
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Number of elements should be the same as the number of insertions on new arrays")
+    void size(int elementsToAdd) {
+        initArrays(elementsToAdd);
+        assertEquals(elementsToAdd, bitArray.size());
     }
 }

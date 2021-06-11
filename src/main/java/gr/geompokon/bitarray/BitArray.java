@@ -50,7 +50,7 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.0.0
+ * @version 1.0.2
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList
@@ -198,7 +198,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     public Boolean set(int index, Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements - 1);
-        modCount++;
         // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -319,43 +318,41 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int maxLongIndex = getLongIndex(elements);
         // add the bit and save the LSB that was shifted out
         int bitIntValue = Boolean.compare(bit, Boolean.FALSE);
-        int rightmostBit = insertInLong(bitIntValue, longIndex++, indexInLong);
+        long rightmostBit = insertInLong(bitIntValue, 1, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
-            rightmostBit = insertInLong(rightmostBit, longIndex++, 0);
+            rightmostBit = insertInLong(rightmostBit, 1, longIndex++, 0);
         }
     }
 
     /**
-     * Inserts the bit in the index of the long specified by the arguments and returns the previous LSB.
+     * Inserts the {@code lastLength} rightmost bits of lastValue in the position specified by {@code longIndex} and
+     * {@code indexInLong}, and then shifts every element with index >= {@code indexInLong} to the right. The bits that
+     * are shifted out are returned in the leftmost position
      *
-     * <p>
-     * Inserting at any index is done by splitting the long word in two parts and rejoining them after shifting and
-     * setting the new bit. The LSB that is shifted out is returned.
-     * </p>
-     *
-     * @param bit         the bit to be inserted
+     * @param lastValue   bits to be inserted into the long
+     * @param lastLength  length in bits of the last value
      * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the bit in the long
-     * @return LSB of the long before insertion
+     * @param indexInLong index of the insertion bit in the long
+     * @return bits that were shifted out due to the insertion
      */
-    private int insertInLong(int bit, int longIndex, int indexInLong) {
-        // get right side [indexInLong : ], can not be empty, will be shifted
+    private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
+        // select the bits [indexInLong, (word end)] for the insertion
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
-        // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = data[longIndex] - rightSide;
+        // separate the left part, this will remain intact
+        long leftSide = data[longIndex] & ~rightSide;
 
-        // save LSB
-        long rightSideLSB = rightSide & 1L;
-        // unsigned shift to the right to make space for the new bit
-        rightSide >>>= 1;
-        // set the new bit
-        rightSide |= (long) bit << (BITS_PER_LONG - 1 - indexInLong);
+        // save the bits that will be shifted out
+        long rightSideShiftOut = selectBits(rightSide, BITS_PER_LONG - lastLength, lastLength);
+        // unsigned shift to the right to make space for the new bits
+        rightSide >>>= lastLength;
+        // set the new bits
+        rightSide |= lastValue << (BITS_PER_LONG - lastLength - indexInLong);
         // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
+        data[longIndex] = leftSide ^ rightSide;
 
-        // return the LSB
-        return (int) rightSideLSB;
+        // return the discarded bits
+        return rightSideShiftOut;
     }
 
     /**
@@ -367,47 +364,63 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(elements - 1);
-        int leftmostBit = 0; // dud value for first shift
+        long leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
-            leftmostBit = appendBitAndRemoveAtIndex(leftmostBit, currentLongIndex--, 0);
+            leftmostBit = removeAtIndexAndAppend(leftmostBit, 1, currentLongIndex--, 0);
         }
-        // add the final MSB as LSB of {@code longIndex} and shift only the bits to the removed's right
-        appendBitAndRemoveAtIndex(leftmostBit, longIndex, indexInLong);
+        // add the final MSB as LSB of longIndex and shift only the bits to the popped bit's right
+        removeAtIndexAndAppend(leftmostBit, 1, longIndex, indexInLong);
     }
 
     /**
-     * Appends the bit at the end of the long specified by the arguments and removes the bit at {@code indexInLong}.
+     * Removes the {@code lastLength} bits from the long specified by {@code longIndex} starting from {@code indexInLong}
+     * and then appends the same length of bits from {@code lastValue} at the end of the long. The
      *
-     * <p>
-     * Since {@code indexInLong} can be at the middle of the long word, removing the bit is done by splitting the
-     * long in two parts, clearing the desired bit and shifting once to restore the order of the previous bits.
-     * </p>
-     *
-     * @param bit         the bit to be appended to the long
+     * @param lastValue   bits to be appended to the long
+     * @param lastLength  length in bits of the last value
      * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the bit in the long
-     * @return bit at {@code longIndex} that was popped out
+     * @param indexInLong index of the first removed bit in the long
+     * @return bits that were popped from the long
      */
-    private int appendBitAndRemoveAtIndex(int bit, int longIndex, int indexInLong) {
+    private long removeAtIndexAndAppend(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
         // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = data[longIndex] - rightSide;
+        long leftSide = data[longIndex] & ~rightSide;
 
-        // save MSB
-        int rightSideMSB = getBitInLong(rightSide, indexInLong);
-        // clear MSB and shift to the left to make it "disappear"
-        rightSide &= ~singleBitMask(indexInLong);
-        rightSide <<= 1;
-        // append the previous bit
-        rightSide += bit;
+        // save removed values
+        long poppedValues = selectBits(rightSide, indexInLong, lastLength) >>> (BITS_PER_LONG - indexInLong - lastLength);
+
+        // clear copied bits and shift to the left
+        rightSide = (rightSide << indexInLong + lastLength) >>> indexInLong;
+        // append the previous bits
+        rightSide |= lastValue;
 
         // re-join the two parts
-        data[longIndex] = leftSide + rightSide;
+        data[longIndex] = leftSide ^ rightSide;
 
-        // return the MSB
-        return rightSideMSB;
+        // return the popped bits
+        return poppedValues;
+    }
+
+    /**
+     * Returns a long bit mask with ones only in the range [start, start + length)
+     *
+     * @param start  start index of the selection
+     * @param length number of set bits in the result
+     * @return bit mask covering the range specified
+     * @implSpec <p>
+     * {@code start} should be in the range [0, 63]<br>
+     * {@code length} should be in the range [1, 64]<br>
+     * {@code start} and {@code length} should satisfy: start + length <= {@link #BITS_PER_LONG}
+     * </p>
+     */
+    private long selectBits(long aLong, int start, int length) {
+        long mask = Long.MIN_VALUE >>> start; // need at least the first bit
+        mask |= (Long.MIN_VALUE >>> start) - 1; // make everything to the right ones
+        mask &= -(Long.MIN_VALUE >>> (start + length - 1)); // make everything from end of length and forward 0
+        return aLong & mask;
     }
 
     /**
@@ -430,6 +443,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * </p>
      */
     private void ensureCapacity() {
+        // check for completely full array
+        if (elements == Integer.MAX_VALUE) {
+            throw new IllegalStateException("Cannot insert; array is completely full. Size = " + size());
+        }
+        // extend if currently full
         if (elements == data.length * BITS_PER_LONG) {
             doubleSize();
         }
@@ -439,7 +457,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Doubles the size of the array.
      */
     private void doubleSize() {
-        resize(2 * elements);
+        // make sure new element count does not overflow
+        // we can't index more than Integer.MAX_VALUE elements through the List interface anyway
+        int newSize = (int) Math.min(2L * elements, Integer.MAX_VALUE);
+        resize(newSize);
     }
 
     /**
@@ -495,7 +516,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return (int) Math.ceil(
                 (double) nBits / BITS_PER_LONG);
     }
-
 
     /*
         BitArray specific methods
@@ -557,17 +577,14 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public static BitArray fromString(String stringArray) {
 
-        String start = "Size = ";
+        final String start = "Size = ";
 
         if (!stringArray.startsWith(start)) {
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
 
         // count number of digits of the array size
-        int currentIndex = start.length();
-        while (stringArray.charAt(currentIndex) != ',') {
-            currentIndex++;
-        }
+        int currentIndex = stringArray.indexOf(",", start.length());
 
         int arraySize;
         try {
