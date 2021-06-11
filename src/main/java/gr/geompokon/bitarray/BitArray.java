@@ -50,7 +50,7 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.0.1
+ * @version 1.0.2
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList

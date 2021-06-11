@@ -17,16 +17,18 @@
 package gr.geompokon.bitarray;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.UnknownFormatConversionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class BitArrayTest {
-
-    final static int MAX_TEST_SIZE = 200;
 
     static BitArray bitArray;
     static ArrayList<Boolean> boolArray;
@@ -70,37 +72,50 @@ class BitArrayTest {
     /**
      * Make the bit array from the boolean array
      */
-    @Test
-    void testCopyConstructor() {
-        initArrays(MAX_TEST_SIZE);
-        bitArray.clear();
-
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Copy constructor result should have same size and elements")
+    void testCopyConstructor(int elementsToAdd) {
+        initArrays(elementsToAdd);
         bitArray = new BitArray(boolArray);
+
         myAssertSameArrays();
     }
 
-    @Test
-    void testClone() {
-        initArrays(MAX_TEST_SIZE);
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Result of clone() should have the same elements")
+    void testClone(int elementsToAdd) {
+        initArrays(elementsToAdd);
         BitArray clone = bitArray.clone();
 
         assertEquals(bitArray, clone);
     }
 
-    @Test
-    void testToFromString() {
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1, 5, 10, 50, 100})
+    @DisplayName("Serialized and immediately deserialized array should be the same as original")
+    void testToFromString(int elementsToAdd) {
         // test array with elements
-        initArrays(MAX_TEST_SIZE);
-        String bitArrayStr = bitArray.toString();
-        BitArray copy = BitArray.fromString(bitArrayStr);
+        initArrays(elementsToAdd);
+        BitArray copy = BitArray.fromString(bitArray.toString());
 
         assertEquals(bitArray, copy);
+    }
 
-
-        // test empty array
-        bitArrayStr = new BitArray().toString();
-        copy = BitArray.fromString(bitArrayStr);
-
-        assertEquals(new BitArray(), copy);
+    @ParameterizedTest
+    @ValueSource(strings = {"[0 1]", "Size = 2, [true true]", "Size =z, [0 1]", "Size = 3, [0 1]"})
+    @DisplayName("Bad strings should throw specific exceptions")
+    void testBadFromString(String faultyString) {
+        try {
+            BitArray.fromString(faultyString);
+        } catch (Exception e) {
+            if (!(e instanceof UnknownFormatConversionException
+                    || e instanceof IndexOutOfBoundsException
+                    || e instanceof NumberFormatException)) {
+                fail(e);
+            }
+        }
     }
 }
