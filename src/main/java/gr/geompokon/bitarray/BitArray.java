@@ -577,17 +577,14 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public static BitArray fromString(String stringArray) {
 
-        String start = "Size = ";
+        final String start = "Size = ";
 
         if (!stringArray.startsWith(start)) {
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
 
         // count number of digits of the array size
-        int currentIndex = start.length();
-        while (stringArray.charAt(currentIndex) != ',') {
-            currentIndex++;
-        }
+        int currentIndex = stringArray.indexOf(",", start.length());
 
         int arraySize;
         try {
