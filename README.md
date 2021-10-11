@@ -23,7 +23,7 @@ The class is not currently thread-safe, I will look into it properly at some poi
 Unfortunately, due to the implementation I have not been able to accommodate null values in the array. Null insertions or updates will throw NullPointerException. 
 
 ### Performance
-For the performance difference, check out the [benchmark repository](https://github.com/Abductcows/bit-array-benchmarks). It includes results from my runs and the benchmark files should you want to run them yourself. A TLDR version is that it gets much faster the more the elements are in add/remove. The performance difference stems wholly from resizes and moves. For example an insertion at random indices of 1000 elements with an initial capacity of 10 runs at 2x the speed. Same scenario but for 1.5M elements and the BitArray runs 13x faster. But for already resized arrays and insertions at the tail, the difference is miniscule. The numbers mentioned are quite conservative for safety. Also, it can easily handle `INTEGER.MAX_VALUE` elements, but cannot hold more. 
+For the performance difference, check out the [benchmark repository](https://github.com/Abductcows/bit-array-benchmarks). It includes results from my runs and the benchmark files should you want to run them yourself. A TLDR version is that it gets much faster the more the elements are in add/remove. The performance difference stems wholly from resizes and moves. For example, an insertion at random indices of 1000 elements with an initial capacity of 10 runs at 2x the speed. Same scenario but for 1.5M elements and the BitArray runs 13x faster. But for already resized arrays and insertions at the tail, the difference is miniscule. The numbers mentioned are quite conservative for safety. Also, it can easily handle `INTEGER.MAX_VALUE` elements, but cannot hold more. 
 
 # Getting Started
 You will need the class and source files. You can grab the [latest release](https://github.com/Abductcows/java-bit-array/releases/latest) (built with jdk-11) or download the project and run `mvn install` yourself. Releases contain a zip file with separate jars for classes, sources and javadoc. Include at least the class jar in your project and you will be able to use the BitArray. Looks like you are good to go.
@@ -44,7 +44,7 @@ I would also appreciate you sharing your opinion on this class and the project a
 This Project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ### Authors
-- *George Bouroutzoglou* (geompokon@csd.auth.gr)
+- *George Bouroutzoglou* (georgebour@outlook.com)
 
 
 [open-issues-url]: https://github.com/Abductcows/java-bit-array/issues
