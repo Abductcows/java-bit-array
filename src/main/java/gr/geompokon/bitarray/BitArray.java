@@ -16,6 +16,8 @@
 
 package gr.geompokon.bitarray;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 /**
@@ -108,7 +110,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * </p>
      *
      * @param other the collection supplying the elements
-     * @throws java.lang.NullPointerException if the collection is null
+     * @throws NullPointerException if the collection is null
      */
     public BitArray(Collection<? extends Boolean> other) {
         Objects.requireNonNull(other);
@@ -146,10 +148,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @param index array index to insert the element in
      * @param bit   the boolean value to be inserted
-     * @throws java.lang.IndexOutOfBoundsException if index is out of array insertion bounds
+     * @throws IndexOutOfBoundsException if index is out of array insertion bounds
      */
-    public void add(int index, Boolean bit) {
-        Objects.requireNonNull(bit);
+    @Override
+    public void add(int index, @NotNull Boolean bit) {
         ensureIndexInRange(index, elements);
         modCount++;
         ensureCapacity();
@@ -171,13 +173,26 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
+     * Inserts the boolean value as a bit at the tail of the array
+     *
+     * @param bit the boolean value to be inserted
+     * @return success / failure of the add operation
+     */
+    @Override
+    public boolean add(@NotNull Boolean bit) {
+        add(elements, bit);
+        return true;
+    }
+
+    /**
      * Returns the boolean value of the bit at the selected array index.
      *
      * @param index index of the element in the array
      * @return boolean value of the bit entry
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean get(int index) {
+    @Override
+    public @NotNull Boolean get(int index) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -193,9 +208,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param index index of the array element to be changed
      * @param bit   the new value of the array element
      * @return boolean value of the previous bit at that index
-     * @throws java.lang.IndexOutOfBoundsException if index is out of array bounds
+     * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean set(int index, Boolean bit) {
+    @Override
+    public @NotNull Boolean set(int index, @NotNull Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements - 1);
         // get bit indices
@@ -217,7 +233,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return boolean value of the removed bit
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean remove(int index) {
+    @Override
+    public @NotNull Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
         modCount++;
 
@@ -240,6 +257,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return number of elements in the array
      */
+    @Override
     public int size() {
         return elements;
     }
@@ -247,6 +265,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Clears the contents of the array and releases memory used previously.
      */
+    @Override
     public void clear() {
         modCount++;
         initMembers(DEFAULT_CAPACITY);
@@ -526,6 +545,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return deep copy of {@code this}
      */
+    @Override
     public BitArray clone() {
         return new BitArray(this);
     }
@@ -548,6 +568,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return String representation of the array and its elements
      */
+    @Override
     public String toString() {
         StringBuilder s = new StringBuilder(this.size() * 2);
 
