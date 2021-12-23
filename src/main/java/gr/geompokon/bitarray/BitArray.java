@@ -65,7 +65,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private static final int BITS_PER_LONG = 64;
 
     /**
-     * Default array capacity in bit entries. Used in empty constructor
+     * Default array capacity in bit entries
      */
     private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
 
@@ -80,7 +80,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to 64
+     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -90,7 +90,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Initialises the array to store at least {@code initialCapacity} elements before resizing.
      *
      * <p>
-     * Actual memory size of the array in bits is rounded up to the next multiple of 64.
+     * Actual memory size of the array in bits is rounded up to the next multiple of {@link #BITS_PER_LONG}.
      * </p>
      *
      * @param initialCapacity initial capacity of the array in bit entries
@@ -105,14 +105,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Builds the array from the specified collection in the order specified by its iterator
      *
-     * <p>
-     * Copy of collection without {@code addAll()} for BitArray types
-     * </p>
-     *
      * @param other the collection supplying the elements
      * @throws NullPointerException if the collection is null
      */
-    public BitArray(Collection<? extends Boolean> other) {
+    public BitArray(@NotNull Collection<? extends Boolean> other) {
         Objects.requireNonNull(other);
 
         // fast copy for BitArray
@@ -611,23 +607,28 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         try {
             String arraySizeStr = stringArray.substring(start.length(), currentIndex);
             arraySize = Integer.parseInt(arraySizeStr);
+
+
+            // move the cursor to the first element
+            currentIndex += ", [".length();
+
+            // read elements
+            List<Character> allowedElements = List.of('0', '1');
+
+            BitArray result = new BitArray(arraySize);
+            for (int i = 0; i < arraySize; i++) {
+                char current = stringArray.charAt(currentIndex);
+                if (currentIndex >= stringArray.length() - 1 || !allowedElements.contains(current)) {
+                    throw new UnknownFormatConversionException("Not a valid BitArray string");
+                }
+
+                result.add(current == '1');
+                currentIndex += 2;
+            }
+
+            return result;
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
-
-        // move the cursor to the first element
-        currentIndex += ", [".length();
-
-        // read elements
-        BitArray result = new BitArray(arraySize);
-        for (int i = 0; i < arraySize; i++) {
-            if (currentIndex >= stringArray.length() - 1) {
-                throw new UnknownFormatConversionException("Not a valid BitArray string");
-            }
-            result.add(stringArray.charAt(currentIndex) == '1');
-            currentIndex += 2;
-        }
-
-        return result;
     }
 }
