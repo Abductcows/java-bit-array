@@ -7,7 +7,7 @@
 
     <groupId>gr.geompokon</groupId>
     <artifactId>bit-array</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
 
     <name>BitArray</name>
     <description>Java List of Booleans class with reduced memory usage and higher performance</description>

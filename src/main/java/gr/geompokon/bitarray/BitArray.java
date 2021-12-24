@@ -52,7 +52,7 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.0.2
+ * @version 1.0.3
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList
