@@ -114,7 +114,6 @@ class BitArrayTest {
             // given
             List<Boolean> authority = new ArrayList<>(elementsToRemove.size());
             List<Integer> removeIndices = TestUtils.getRemoveIndices(elementsToRemove.size());
-            System.out.println(removeIndices);
             bitArray.addAll(elementsToRemove);
             authority.addAll(elementsToRemove);
 
@@ -221,7 +220,6 @@ class BitArrayTest {
             // when/then
             assertThatThrownBy(() -> {
                 BitArray impossibleList = BitArray.fromString(faultyString);
-                System.out.println(impossibleList);
                 impossibleList.add(Boolean.FALSE);
             }).isInstanceOf(UnknownFormatConversionException.class);
         }
