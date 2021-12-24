@@ -16,6 +16,8 @@
 
 package gr.geompokon.bitarray;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 /**
@@ -63,7 +65,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private static final int BITS_PER_LONG = 64;
 
     /**
-     * Default array capacity in bit entries. Used in empty constructor
+     * Default array capacity in bit entries
      */
     private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
 
@@ -78,7 +80,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to 64
+     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -88,7 +90,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Initialises the array to store at least {@code initialCapacity} elements before resizing.
      *
      * <p>
-     * Actual memory size of the array in bits is rounded up to the next multiple of 64.
+     * Actual memory size of the array in bits is rounded up to the next multiple of {@link #BITS_PER_LONG}.
      * </p>
      *
      * @param initialCapacity initial capacity of the array in bit entries
@@ -103,14 +105,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Builds the array from the specified collection in the order specified by its iterator
      *
-     * <p>
-     * Copy of collection without {@code addAll()} for BitArray types
-     * </p>
-     *
      * @param other the collection supplying the elements
-     * @throws java.lang.NullPointerException if the collection is null
+     * @throws NullPointerException if the collection is null
      */
-    public BitArray(Collection<? extends Boolean> other) {
+    public BitArray(@NotNull Collection<? extends Boolean> other) {
         Objects.requireNonNull(other);
 
         // fast copy for BitArray
@@ -146,10 +144,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @param index array index to insert the element in
      * @param bit   the boolean value to be inserted
-     * @throws java.lang.IndexOutOfBoundsException if index is out of array insertion bounds
+     * @throws IndexOutOfBoundsException if index is out of array insertion bounds
      */
-    public void add(int index, Boolean bit) {
-        Objects.requireNonNull(bit);
+    @Override
+    public void add(int index, @NotNull Boolean bit) {
         ensureIndexInRange(index, elements);
         modCount++;
         ensureCapacity();
@@ -171,13 +169,26 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
+     * Inserts the boolean value as a bit at the tail of the array
+     *
+     * @param bit the boolean value to be inserted
+     * @return success / failure of the add operation
+     */
+    @Override
+    public boolean add(@NotNull Boolean bit) {
+        add(elements, bit);
+        return true;
+    }
+
+    /**
      * Returns the boolean value of the bit at the selected array index.
      *
      * @param index index of the element in the array
      * @return boolean value of the bit entry
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean get(int index) {
+    @Override
+    public @NotNull Boolean get(int index) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -193,9 +204,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param index index of the array element to be changed
      * @param bit   the new value of the array element
      * @return boolean value of the previous bit at that index
-     * @throws java.lang.IndexOutOfBoundsException if index is out of array bounds
+     * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean set(int index, Boolean bit) {
+    @Override
+    public @NotNull Boolean set(int index, @NotNull Boolean bit) {
         Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements - 1);
         // get bit indices
@@ -217,7 +229,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return boolean value of the removed bit
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
-    public Boolean remove(int index) {
+    @Override
+    public @NotNull Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
         modCount++;
 
@@ -240,6 +253,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return number of elements in the array
      */
+    @Override
     public int size() {
         return elements;
     }
@@ -247,6 +261,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Clears the contents of the array and releases memory used previously.
      */
+    @Override
     public void clear() {
         modCount++;
         initMembers(DEFAULT_CAPACITY);
@@ -526,6 +541,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return deep copy of {@code this}
      */
+    @Override
     public BitArray clone() {
         return new BitArray(this);
     }
@@ -548,6 +564,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return String representation of the array and its elements
      */
+    @Override
     public String toString() {
         StringBuilder s = new StringBuilder(this.size() * 2);
 
@@ -590,23 +607,28 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         try {
             String arraySizeStr = stringArray.substring(start.length(), currentIndex);
             arraySize = Integer.parseInt(arraySizeStr);
+
+
+            // move the cursor to the first element
+            currentIndex += ", [".length();
+
+            // read elements
+            List<Character> allowedElements = List.of('0', '1');
+
+            BitArray result = new BitArray(arraySize);
+            for (int i = 0; i < arraySize; i++) {
+                char current = stringArray.charAt(currentIndex);
+                if (currentIndex >= stringArray.length() - 1 || !allowedElements.contains(current)) {
+                    throw new UnknownFormatConversionException("Not a valid BitArray string");
+                }
+
+                result.add(current == '1');
+                currentIndex += 2;
+            }
+
+            return result;
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
-
-        // move the cursor to the first element
-        currentIndex += ", [".length();
-
-        // read elements
-        BitArray result = new BitArray(arraySize);
-        for (int i = 0; i < arraySize; i++) {
-            if (currentIndex >= stringArray.length() - 1) {
-                throw new UnknownFormatConversionException("Not a valid BitArray string");
-            }
-            result.add(stringArray.charAt(currentIndex) == '1');
-            currentIndex += 2;
-        }
-
-        return result;
     }
 }
