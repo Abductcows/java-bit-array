@@ -1,4 +1,5 @@
 *
 !src/**
+!test/**
 !pom.xml
 !.gitignore
