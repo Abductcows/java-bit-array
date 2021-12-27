@@ -19,6 +19,7 @@ package gr.geompokon.bitarray;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
@@ -52,7 +53,7 @@ import java.util.*;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.0.3
+ * @version 1.1.0
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList
@@ -535,6 +536,29 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /*
         BitArray specific methods
     */
+
+    /**
+     * Calculates the parity of {@link Boolean#TRUE ones} in the array
+     * @return 0 or 1 if there is an even or odd number of {@link Boolean#TRUE ones} respectively
+     */
+    public int sumMod2() {
+        if (isEmpty()) return 0;
+        AtomicInteger sumMod2 = new AtomicInteger();
+
+        sumMod2.addAndGet(Long.bitCount(Arrays.stream(data)
+                .limit(data.length - 1)
+                .reduce(0L, (i, j) -> i ^ j)));
+
+        int remainingBitsIndex = size() - size() % BITS_PER_LONG;
+
+        this.listIterator(remainingBitsIndex).forEachRemaining(e -> {
+            if (e) {
+                sumMod2.incrementAndGet();
+            }
+        });
+
+        return sumMod2.get() % 2;
+    }
 
     /**
      * Returns a deep copy of this object

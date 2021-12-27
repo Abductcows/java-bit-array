@@ -7,7 +7,7 @@
 
     <groupId>gr.geompokon</groupId>
     <artifactId>bit-array</artifactId>
-    <version>1.0.3</version>
+    <version>1.1.0</version>
 
     <name>BitArray</name>
     <description>Java List of Booleans class with reduced memory usage and higher performance</description>
@@ -47,6 +47,7 @@
             <artifactId>assertj-core</artifactId>
             <version>3.21.0</version>
             <scope>test</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

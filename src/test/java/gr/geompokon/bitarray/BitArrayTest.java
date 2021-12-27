@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("BitArray Unit Tests")
 class BitArrayTest {
 
-    static BitArray bitArray;
+    BitArray bitArray;
 
     @BeforeEach
     void setUp() {
@@ -239,5 +239,31 @@ class BitArrayTest {
         // then
         assertThat(bitArray).isEmpty();
     }
+
+    @ParameterizedTest(name = "{0} elements")
+    @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+    @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
+    void sumMod2_works(List<Boolean> elementsToAdd) {
+        // given
+        bitArray.addAll(elementsToAdd);
+
+        // when
+        int sumMod2 = bitArray.sumMod2();
+        int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count() % 2;
+
+        // then
+        printDetails(elementsToAdd.size(), expected, sumMod2);
+        assertThat(sumMod2).isEqualTo(expected);
+    }
+
+    void printDetails(int testSize, Object expected, Object actual) {
+        System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual);
+        if (bitArray.size() <= 10) {
+            System.out.println(" | Array: " + bitArray);
+        } else {
+            System.out.println();
+        }
+    }
+
 
 }
