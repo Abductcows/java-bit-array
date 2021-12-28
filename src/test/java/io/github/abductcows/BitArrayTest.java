@@ -158,7 +158,7 @@ class BitArrayTest {
             BitArray copy = new BitArray(bitArray);
 
             // then
-            assertThat(copy == bitArray).isFalse();
+            assertThat(copy).isNotSameAs(bitArray);
         }
 
 
@@ -188,7 +188,7 @@ class BitArrayTest {
             BitArray copy = bitArray.clone();
 
             // then
-            assertThat(copy == bitArray).isFalse();
+            assertThat(copy).isNotSameAs(bitArray);
         }
     }
 
