@@ -1,4 +1,4 @@
-package gr.geompokon.bitarray;
+package io.github.abductcows;
 
 import org.junit.jupiter.api.Named;
 

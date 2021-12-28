@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
 
-    <groupId>gr.geompokon</groupId>
+    <groupId>io.github.abductcows</groupId>
     <artifactId>bit-array</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 
     <name>BitArray</name>
     <description>Java List of Booleans class with reduced memory usage and higher performance</description>

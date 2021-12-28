@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package gr.geompokon.bitarray;
+package io.github.abductcows;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * not follow the one bit per entry principle.
  * </p>
  *
- * @version 1.1.0
+ * @version 1.1.1
  * @see java.util.List
  * @see java.util.AbstractList
  * @see java.util.ArrayList

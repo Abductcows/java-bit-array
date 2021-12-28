@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package gr.geompokon.bitarray;
+package io.github.abductcows;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +49,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at index should behave like ArrayList")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void add_at_index_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -68,7 +68,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at the end should behave like ArrayList")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void add_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -86,7 +86,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Set at index should behave like ArrayList")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void set_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -108,7 +108,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Remove at index should behave like ArrayList")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void remove_test(List<Boolean> elementsToRemove) {
 
             // given
@@ -135,7 +135,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of copy constructor should have the same elements")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void copy_constructor_returns_identical_list(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -149,7 +149,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of copy constructor should be a separate object")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void copy_constructor_returns_new_Object(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -164,7 +164,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of clone() should have the same elements")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void clone_returns_identical_list(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -179,7 +179,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of clone should be a separate object")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void clone_returns_new_Object(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -200,7 +200,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Serialized and immediately deserialized array should be the same as original")
-        @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
         void toString_and_fromString_do_not_alter_content(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -227,7 +227,7 @@ class BitArrayTest {
 
 
     @ParameterizedTest(name = "{0} elements before clear")
-    @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+    @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
     @DisplayName("Cleared array should be empty")
     void clear_leaves_empty_list(List<Boolean> elementsToAdd) {
         // given
@@ -241,7 +241,7 @@ class BitArrayTest {
     }
 
     @ParameterizedTest(name = "{0} elements")
-    @MethodSource("gr.geompokon.bitarray.TestUtils#testCaseBooleans")
+    @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
     @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
     void sumMod2_works(List<Boolean> elementsToAdd) {
         // given
