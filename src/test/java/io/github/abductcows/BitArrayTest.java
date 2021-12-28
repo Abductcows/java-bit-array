@@ -147,20 +147,6 @@ class BitArrayTest {
             assertThat(copy).isEqualTo(bitArray);
         }
 
-        @ParameterizedTest(name = "{0} elements")
-        @DisplayName("Result of copy constructor should be a separate object")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
-        void copy_constructor_returns_new_Object(List<Boolean> elementsToAdd) {
-            // given
-            bitArray.addAll(elementsToAdd);
-
-            // when
-            BitArray copy = new BitArray(bitArray);
-
-            // then
-            assertThat(copy).isNotSameAs(bitArray);
-        }
-
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of clone() should have the same elements")
