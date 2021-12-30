@@ -16,6 +16,7 @@
 
 package io.github.abductcows;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -421,11 +422,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Returns a long bit mask with ones only in the range [start, start + length)
+     * Selects the bits [start, start + length) from the argument long, leaving everything else at 0
      *
      * @param start  start index of the selection
-     * @param length number of set bits in the result
-     * @return bit mask covering the range specified
+     * @param length number of bits to be kept intact
+     * @return the argument long with only the selected bits preserved
      * @implSpec <p>
      * {@code start} should be in the range [0, 63]<br>
      * {@code length} should be in the range [1, 64]<br>
@@ -526,7 +527,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Returns the smallest number of longs needed to contain {@code nBits} bits.
      *
      * @param nBits the number of bits
-     * @return ceil division of {@code nBits} with {@link #BITS_PER_LONG}
+     * @return smallest number of longs needed to contain {@code nBits} bits.
      */
     private int longsRequiredForNBits(int nBits) {
         return (int) Math.ceil(
@@ -539,6 +540,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     /**
      * Calculates the parity of {@link Boolean#TRUE ones} in the array
+     *
      * @return 0 or 1 if there is an even or odd number of {@link Boolean#TRUE ones} respectively
      */
     public int sumMod2() {
@@ -565,8 +567,9 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return deep copy of {@code this}
      */
+    @Contract(" -> new")
     @Override
-    public BitArray clone() {
+    public @NotNull BitArray clone() {
         return new BitArray(this);
     }
 
@@ -616,7 +619,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return new BitArray instance with the String array's contents
      * @throws UnknownFormatConversionException if string parsing fails
      */
-    public static BitArray fromString(String stringArray) {
+    public static @NotNull BitArray fromString(String stringArray) {
 
         final String start = "Size = ";
 
