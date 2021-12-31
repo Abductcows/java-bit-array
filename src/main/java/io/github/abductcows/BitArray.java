@@ -21,43 +21,31 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
- * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
+ * <h2>Random access List&lt;Boolean&gt; that uses a {@code long} primitive array to store its elements. Each element
+ * occupies a single bit in its corresponding {@code long}</h2>
  *
- * <p>
- * This class was made explicitly to replace {@link java.util.ArrayList} when working with {@code Boolean} elements.
- * It aims to enhance the performance of common operations such as {@code add}, {@code remove} and {@code set} while
- * also minimizing its memory footprint.
- * </p>
+ * <p>This class is superior to ArrayList in terms of CRUD performance and memory usage. Its only limitation is its
+ * inability to store {@code null} values.</p>
  *
- * <p>
- * Memory conservation and higher performance stem from the particular case of dealing with {@code Boolean} elements.
- * The array stores each boolean as its bit equivalent (0 for false and 1 for true) inside of an array of long primitives.
- * Therefore shifts of multiple elements and array copying can be done en masse, all while elements occupy less memory
- * when in storage.
- * </p>
+ * <p>Read only operations such as {@link #get(int)} and iterator traversals
+ * run at about the same time. {@link #add(Boolean) Add} and {@link #remove(int) remove} at the tail also have similar
+ * performance. The most significant gains come from element copy and move operations. This includes
+ * random index {@link #add(Boolean) add} and {@link #remove(int) remove}, {@link #removeRange(int, int) removeRange},
+ * array resizes etc. You can find my benchmarks and their results from my machine
+ * <a href=https://github.com/Abductcows/bit-array-benchmarks>here</a></p>
  *
- * <p>
- * A glimpse of the future:<br><br>
- * <code>
- * List&lt;Boolean&gt; elements = new ArrayList&lt;&gt;(); // rookie mistake
- * </code><br>
- * changes to:<br>
- * <code>
- * List&lt;Boolean&gt; elements = new BitArray(); // no convoluted diamond operator, superior performance
- * </code>
- * </p>
+ * <p>This class is NOT synchronized. For a synchronized version use {@link java.util.Collections.SynchronizedList}</p>
  *
- * <p>
- * Note that methods that explicitly return a new {@code Collection} of the elements (other than {@code subList}) will
- * not follow the one bit per entry principle.
- * </p>
+ * <p>Note that methods which return a copy of the elements will probably not follow the one bit per entry
+ * principle.
+ * {@link java.util.AbstractList.SubList SubList} and
+ * {@link java.util.Collections.SynchronizedList SynchronizedList}
+ * are safe to use of course.</p>
  *
  * @version 1.1.1
- * @see java.util.List
- * @see java.util.AbstractList
- * @see java.util.ArrayList
  */
 public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
 
@@ -72,12 +60,12 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
 
     /**
-     * {@code long} array storing the bit entries.
+     * Element storage
      */
     private long[] data;
 
     /**
-     * Current number of bit elements in the array.
+     * Current number of elements
      */
     private int elements;
 
