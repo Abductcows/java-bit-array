@@ -787,12 +787,12 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     @Override
     public void forEach(Consumer<? super Boolean> action) {
-        super.forEach(action);
+        for (Boolean b : this) {
+            action.accept(b);
+        }
     }
 
     public static void main(String[] args) {
-        var a = new BitArray(List.of(true, false, true, true, false));
-        var arr = a.toArray(Boolean[]::new);
-        Arrays.stream(arr).forEach(System.out::println);
+
     }
 }
