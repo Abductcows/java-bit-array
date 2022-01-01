@@ -7,7 +7,7 @@
 
     <groupId>io.github.abductcows</groupId>
     <artifactId>bit-array</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.2.1-SNAPSHOT</version>
 
     <name>BitArray</name>
     <description>Java List of Booleans class with reduced memory usage and higher performance</description>
@@ -24,6 +24,15 @@
         <assertj-core.version>3.21.0</assertj-core.version>
     </properties>
 
+    <repositories>
+        <!-- Javax annotations repo -->
+        <repository>
+            <id>onehippo</id>
+            <name>Onehippo Maven</name>
+            <url>https://maven.onehippo.com/maven2/</url>
+        </repository>
+    </repositories>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -36,6 +45,12 @@
     </distributionManagement>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/javax.annotation/jsr305 -->
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>1.0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -22,6 +22,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /**
  * <h2>Random access List&lt;Boolean&gt; that uses a {@code long} primitive array to store its elements. Each element
@@ -47,6 +51,7 @@ import java.util.function.Consumer;
  *
  * @version 1.1.1
  */
+@CustomNonNullApi
 public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
 
     /**
@@ -62,7 +67,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Element storage
      */
-    private long[] data;
+    private long[] data = {};
 
     /**
      * Current number of elements
@@ -99,21 +104,19 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws NullPointerException if the collection is null
      */
     public BitArray(@NotNull Collection<? extends Boolean> other) {
-        Objects.requireNonNull(other);
-
         // fast copy for BitArray
         if (other instanceof BitArray) {
             BitArray otherBitArray = (BitArray) other;
             int longsToCopy = longsRequiredForNBits(otherBitArray.elements);
 
-            this.data = Arrays.copyOf(otherBitArray.data, longsToCopy);
-            this.elements = otherBitArray.elements;
+            data = Arrays.copyOf(otherBitArray.data, longsToCopy);
+            elements = otherBitArray.elements;
             return;
         }
 
         // standard copy
         initMembers(other.size());
-        this.addAll(other);
+        addAll(other);
     }
 
     /**
@@ -198,7 +201,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public @NotNull Boolean set(int index, @NotNull Boolean bit) {
-        Objects.requireNonNull(bit);
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -436,7 +438,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     private void ensureIndexInRange(int index, int endInclusive) {
         if (index < 0 || index > endInclusive) {
-            throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + this.size());
+            throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + size());
         }
     }
 
@@ -477,7 +479,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         // In case the new size is 0 (for example from calling double on a 0 capacity array)
         // set the new capacity to some default value
         if (newSize == 0) {
-            this.initMembers(DEFAULT_CAPACITY);
+            initMembers(DEFAULT_CAPACITY);
             return;
         }
         // make sure to create enough longs for new size
@@ -580,20 +582,20 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return String representation of the array and its elements
      */
     @Override
-    public String toString() {
-        StringBuilder s = new StringBuilder(this.size() * 2);
+    public @NotNull String toString() {
+        StringBuilder s = new StringBuilder(size() * 2 + 10);
 
         // write size of the array
-        s.append("Size = ").append(this.size()).append(", ");
+        s.append("Size = ").append(size()).append(", ");
 
         // write the list of bits as 1s and 0s
         s.append('[');
-        for (int i = 0; i < this.size() - 1; i++) {
-            s.append(Boolean.compare(this.get(i), Boolean.FALSE));
+        for (int i = 0; i < size() - 1; i++) {
+            s.append(Boolean.compare(get(i), Boolean.FALSE));
             s.append(' ');
         }
         if (size() > 0) {
-            s.append(Boolean.compare(this.get(this.size() - 1), Boolean.FALSE));
+            s.append(Boolean.compare(get(size() - 1), Boolean.FALSE));
         }
         s.append(']');
 
@@ -645,5 +647,152 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         } catch (IndexOutOfBoundsException | NumberFormatException e) {
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
+    }
+
+    /*
+    Non-null overrides
+     */
+
+    @Override
+    public int indexOf(Object o) {
+        return super.indexOf(o);
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return super.lastIndexOf(o);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Boolean> c) {
+        return super.addAll(index, c);
+    }
+
+    @Override
+    public Iterator<Boolean> iterator() {
+        return super.iterator();
+    }
+
+    @Override
+    public ListIterator<Boolean> listIterator() {
+        return super.listIterator();
+    }
+
+    @Override
+    public ListIterator<Boolean> listIterator(int index) {
+        return super.listIterator(index);
+    }
+
+    @Override
+    public List<Boolean> subList(int fromIndex, int toIndex) {
+        return super.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        super.removeRange(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return super.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return super.contains(o);
+    }
+
+    @NotNull
+    @Override
+    public Boolean[] toArray() {
+        return toArray(new Boolean[size()]);
+    }
+
+    @NotNull
+    @Override
+    public <T> T[] toArray(@NotNull T[] a) {
+        return super.toArray(a);
+    }
+
+    @Override
+    public <T> T[] toArray(IntFunction<T[]> generator) {
+        return super.toArray(generator);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return super.remove(o);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return super.containsAll(c);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Boolean> c) {
+        return super.addAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return super.removeAll(c);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return super.retainAll(c);
+    }
+
+    @Override
+    public void replaceAll(UnaryOperator<Boolean> operator) {
+        super.replaceAll(operator);
+    }
+
+    @Override
+    public void sort(Comparator<? super Boolean> c) {
+        super.sort(c);
+    }
+
+    @Override
+    public Spliterator<Boolean> spliterator() {
+        return super.spliterator();
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super Boolean> filter) {
+        return super.removeIf(filter);
+    }
+
+    @Override
+    public Stream<Boolean> stream() {
+        return super.stream();
+    }
+
+    @Override
+    public Stream<Boolean> parallelStream() {
+        return super.parallelStream();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Boolean> action) {
+        super.forEach(action);
+    }
+
+    public static void main(String[] args) {
+        var a = new BitArray(List.of(true, false, true, true, false));
+        var arr = a.toArray(Boolean[]::new);
+        Arrays.stream(arr).forEach(System.out::println);
     }
 }
