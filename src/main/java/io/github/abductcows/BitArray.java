@@ -536,10 +536,12 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public int sumMod2() {
         if (isEmpty()) return 0;
+
         AtomicInteger sumMod2 = new AtomicInteger(0);
+        int limit = longsRequiredForNBits(size()) - 1;
 
         sumMod2.addAndGet(Long.bitCount(Arrays.stream(data)
-                .limit(data.length - 1)
+                .limit(limit)
                 .reduce(0L, (i, j) -> i ^ j)));
 
         int remainingBitsIndex = size() - size() % BITS_PER_LONG;
@@ -557,9 +559,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         if (isEmpty()) return 0;
 
         AtomicLong sum = new AtomicLong(0L);
+        int limit = longsRequiredForNBits(size()) - 1;
 
         sum.addAndGet(Arrays.stream(data)
-                .limit(data.length - 1)
+                .limit(limit)
                 .map(Long::bitCount)
                 .sum()
         );
