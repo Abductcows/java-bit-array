@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -535,7 +536,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public int sumMod2() {
         if (isEmpty()) return 0;
-        AtomicInteger sumMod2 = new AtomicInteger();
+        AtomicInteger sumMod2 = new AtomicInteger(0);
 
         sumMod2.addAndGet(Long.bitCount(Arrays.stream(data)
                 .limit(data.length - 1)
@@ -550,6 +551,31 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         });
 
         return sumMod2.get() % 2;
+    }
+
+    public int countOnes() {
+        if (isEmpty()) return 0;
+
+        AtomicLong sum = new AtomicLong(0L);
+
+        sum.addAndGet(Arrays.stream(data)
+                .limit(data.length - 1)
+                .map(Long::bitCount)
+                .sum()
+        );
+
+        int remainingBitsIndex = size() - size() % BITS_PER_LONG;
+        this.listIterator(remainingBitsIndex).forEachRemaining(e -> {
+            if (e) {
+                sum.incrementAndGet();
+            }
+        });
+
+        return sum.intValue();
+    }
+
+    public int countZeros() {
+        return size() - countOnes();
     }
 
     /**

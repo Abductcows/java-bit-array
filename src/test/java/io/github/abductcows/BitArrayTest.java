@@ -212,35 +212,81 @@ class BitArrayTest {
     }
 
 
-    @ParameterizedTest(name = "{0} elements before clear")
-    @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
-    @DisplayName("Cleared array should be empty")
-    void clear_leaves_empty_list(List<Boolean> elementsToAdd) {
-        // given
-        bitArray.addAll(elementsToAdd);
+    @Nested
+    @DisplayName("New Method Tests")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class NewMethodTests {
 
-        // when
-        bitArray.clear();
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
+        void sumMod2_works(List<Boolean> elementsToAdd) {
+            // given
+            bitArray.addAll(elementsToAdd);
 
-        // then
-        assertThat(bitArray).isEmpty();
+            // when
+            int sumMod2 = bitArray.sumMod2();
+            int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count() % 2;
+
+            // then
+            printDetails(elementsToAdd.size(), expected, sumMod2);
+            assertThat(sumMod2).isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @DisplayName("countOnes is equivalent to the number of true elements in the array")
+        void countOnes_counts_ones(List<Boolean> elementsToAdd) {
+            // given
+            bitArray.addAll(elementsToAdd);
+
+            // when
+            int ones = bitArray.countOnes();
+            int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count();
+
+            // then
+            printDetails(elementsToAdd.size(), expected, ones);
+            assertThat(ones).isEqualTo(expected);
+        }
+
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @DisplayName("countZeros is equivalent to the number of false elements in the array")
+        void countZeros_counts_zeros(List<Boolean> elementsToAdd) {
+            // given
+            bitArray.addAll(elementsToAdd);
+
+            // when
+            int zeros = bitArray.countZeros();
+            int expected = (int) bitArray.stream().filter((e) -> e == Boolean.FALSE).count();
+
+            // then
+            printDetails(elementsToAdd.size(), expected, zeros);
+            assertThat(zeros).isEqualTo(expected);
+        }
     }
 
-    @ParameterizedTest(name = "{0} elements")
-    @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
-    @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
-    void sumMod2_works(List<Boolean> elementsToAdd) {
-        // given
-        bitArray.addAll(elementsToAdd);
 
-        // when
-        int sumMod2 = bitArray.sumMod2();
-        int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count() % 2;
+    @Nested
+    @DisplayName("Misc Tests")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class MiscTests {
 
-        // then
-        printDetails(elementsToAdd.size(), expected, sumMod2);
-        assertThat(sumMod2).isEqualTo(expected);
+        @ParameterizedTest(name = "{0} elements before clear")
+        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @DisplayName("Cleared array should be empty")
+        void clear_leaves_empty_list(List<Boolean> elementsToAdd) {
+            // given
+            bitArray.addAll(elementsToAdd);
+
+            // when
+            bitArray.clear();
+
+            // then
+            assertThat(bitArray).isEmpty();
+        }
     }
+
 
     void printDetails(int testSize, Object expected, Object actual) {
         System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual);
@@ -250,6 +296,4 @@ class BitArrayTest {
             System.out.println();
         }
     }
-
-
 }
