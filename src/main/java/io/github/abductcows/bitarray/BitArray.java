@@ -17,7 +17,6 @@
 package io.github.abductcows.bitarray;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -37,8 +36,8 @@ import java.util.stream.Stream;
  * <p>Read only operations such as {@link #get(int)} and iterator traversals
  * run at about the same time. {@link #add(Boolean) Add} and {@link #remove(int) remove} at the tail also have similar
  * performance. The most significant gains come from element copy and move operations. This includes
- * random index {@link #add(Boolean) add} and {@link #remove(int) remove}, {@link #removeRange(int, int) removeRange},
- * array resizes etc. You can find my benchmarks and their results from my machine
+ * random index {@link #add(Boolean) add} and {@link #remove(int) remove}, array resizes etc.
+ * You can find my benchmarks and their results from my machine
  * <a href=https://github.com/Abductcows/bit-array-benchmarks>here</a></p>
  *
  * <p>This class is NOT synchronized. For a synchronized version use {@link java.util.Collections.SynchronizedList}</p>
@@ -103,7 +102,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param other the collection supplying the elements
      * @throws NullPointerException if the collection is null
      */
-    public BitArray(@NotNull Collection<? extends Boolean> other) {
+    public BitArray(Collection<? extends Boolean> other) {
         // fast copy for BitArray
         if (other instanceof BitArray) {
             BitArray otherBitArray = (BitArray) other;
@@ -140,7 +139,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array insertion bounds
      */
     @Override
-    public void add(int index, @NotNull Boolean bit) {
+    public void add(int index, Boolean bit) {
         ensureIndexInRange(index, elements);
         modCount++;
         ensureCapacity();
@@ -168,7 +167,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return success / failure of the add operation
      */
     @Override
-    public boolean add(@NotNull Boolean bit) {
+    public boolean add(Boolean bit) {
         add(elements, bit);
         return true;
     }
@@ -181,7 +180,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean get(int index) {
+    public Boolean get(int index) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -200,7 +199,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean set(int index, @NotNull Boolean bit) {
+    public Boolean set(int index, Boolean bit) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -222,7 +221,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean remove(int index) {
+    public Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
         modCount++;
 
@@ -297,20 +296,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
             return;
         }
         data[longIndex] &= ~singleBitMask(indexInLong);
-    }
-
-    /**
-     * Returns the bit at the location specified by the long indices.
-     *
-     * @param longIndex   index of the long in the data array
-     * @param indexInLong index of the bit in the long
-     * @return the bit at the specified location
-     */
-    private boolean getBit(int longIndex, int indexInLong) {
-        // get the bit
-        int bit = getBitInLong(data[longIndex], indexInLong);
-        // return its bool value
-        return bit != 0;
     }
 
     /**
@@ -440,6 +425,20 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         if (index < 0 || index > endInclusive) {
             throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + size());
         }
+    }
+
+    /**
+     * Returns the bit at the location specified by the long indices.
+     *
+     * @param longIndex   index of the long in the data array
+     * @param indexInLong index of the bit in the long
+     * @return the bit at the specified location
+     */
+    private boolean getBit(int longIndex, int indexInLong) {
+        // get the bit
+        int bit = getBitInLong(data[longIndex], indexInLong);
+        // return its bool value
+        return bit != 0;
     }
 
     /**
@@ -583,7 +582,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Contract(" -> new")
     @Override
-    public @NotNull BitArray clone() {
+    public BitArray clone() {
         return new BitArray(this);
     }
 
@@ -606,7 +605,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return String representation of the array and its elements
      */
     @Override
-    public @NotNull String toString() {
+    public String toString() {
         StringBuilder s = new StringBuilder(size() * 2 + 10);
 
         // write size of the array
@@ -633,7 +632,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @return new BitArray instance with the String array's contents
      * @throws UnknownFormatConversionException if string parsing fails
      */
-    public static @NotNull BitArray fromString(String stringArray) {
+    public static BitArray fromString(String stringArray) {
 
         final String start = "Size = ";
 
@@ -751,15 +750,13 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return super.contains(o);
     }
 
-    @NotNull
     @Override
     public Boolean[] toArray() {
         return toArray(new Boolean[size()]);
     }
 
-    @NotNull
     @Override
-    public <T> T[] toArray(@NotNull T[] a) {
+    public <T> T[] toArray(T[] a) {
         return super.toArray(a);
     }
 
