@@ -13,349 +13,304 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
+package io.github.abductcows.bitarray
 
-package io.github.abductcows.bitarray;
-
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UnknownFormatConversionException;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import io.github.abductcows.bitarray.TestUtils.getAddIndices
+import io.github.abductcows.bitarray.TestUtils.getRemoveIndices
+import io.github.abductcows.bitarray.TestUtils.getSetIndices
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
+import java.util.*
 
 @DisplayName("BitArray Unit Tests")
-class BitArrayTest {
+internal class BitArrayTest {
 
-    BitArray bitArray;
+    lateinit var bitArray: BitArray
 
     @BeforeEach
-    void setUp() {
-        bitArray = new BitArray();
+    fun setUp() {
+        bitArray = BitArray()
     }
-
 
     @Nested
     @DisplayName("CRUD Tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class CRUDTest {
+    internal inner class CRUDTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at index should behave like ArrayList")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void add_at_index_test(List<Boolean> elementsToAdd) {
+        fun `add at index should work like ArrayList`(elementsToAdd: List<Boolean>) {
 
             // given
-            List<Boolean> authority = new ArrayList<>(elementsToAdd.size());
-            List<Integer> addIndices = TestUtils.getAddIndices(elementsToAdd.size());
+            val authority: MutableList<Boolean> = ArrayList(elementsToAdd.size)
+            val addIndices = getAddIndices(elementsToAdd.size)
 
             // when
-            for (int i = 0; i < elementsToAdd.size(); i++) {
-                bitArray.add(addIndices.get(i), elementsToAdd.get(i));
-                authority.add(addIndices.get(i), elementsToAdd.get(i));
+            for (i in elementsToAdd.indices) {
+                bitArray.add(addIndices[i], elementsToAdd[i])
+                authority.add(addIndices[i], elementsToAdd[i])
             }
 
             // then
-            assertThat(bitArray).isEqualTo(authority);
+            assertThat(bitArray).isEqualTo(authority)
         }
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at the end should behave like ArrayList")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void add_test(List<Boolean> elementsToAdd) {
+        fun `add at tail should work like ArrayList`(elementsToAdd: List<Boolean>) {
 
             // given
-            List<Boolean> authority = new ArrayList<>(elementsToAdd.size());
+            val authority: MutableList<Boolean> = ArrayList(elementsToAdd.size)
 
             // when
-            for (Boolean aBoolean : elementsToAdd) {
-                bitArray.add(aBoolean);
-                authority.add(aBoolean);
+            for (boolean in elementsToAdd) {
+                bitArray.add(boolean)
+                authority.add(boolean)
             }
 
             // then
-            assertThat(bitArray).isEqualTo(authority);
+            assertThat(bitArray).isEqualTo(authority)
         }
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Set at index should behave like ArrayList")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void set_test(List<Boolean> elementsToAdd) {
+        fun `set at index should work like ArrayList`(elementsToAdd: List<Boolean>) {
 
             // given
-            List<Boolean> authority = new ArrayList<>(elementsToAdd.size());
-            List<Integer> setIndices = TestUtils.getSetIndices(elementsToAdd.size());
-            bitArray.addAll(elementsToAdd);
-            authority.addAll(elementsToAdd);
+            val authority: MutableList<Boolean> = ArrayList(elementsToAdd.size)
+            val setIndices = getSetIndices(elementsToAdd.size)
+            bitArray.addAll(elementsToAdd)
+            authority.addAll(elementsToAdd)
 
             // when/then
-            for (int i : setIndices) {
-                boolean nextSetValue = !authority.get(i);
-
-                authority.set(i, nextSetValue);
-                bitArray.set(i, nextSetValue);
-
-                assertThat(bitArray.get(i)).isEqualTo(authority.get(i));
+            for (index in setIndices) {
+                val nextSetValue = !authority[index]
+                authority[index] = nextSetValue
+                bitArray[index] = nextSetValue
+                assertThat(bitArray[index]).isEqualTo(authority[index])
             }
         }
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Remove at index should behave like ArrayList")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void remove_test(List<Boolean> elementsToRemove) {
+        fun `remove at index should work like ArrayList`(elementsToRemove: List<Boolean>) {
 
             // given
-            List<Boolean> authority = new ArrayList<>(elementsToRemove.size());
-            List<Integer> removeIndices = TestUtils.getRemoveIndices(elementsToRemove.size());
-            bitArray.addAll(elementsToRemove);
-            authority.addAll(elementsToRemove);
+            val authority: MutableList<Boolean> = ArrayList(elementsToRemove.size)
+            val removeIndices = getRemoveIndices(elementsToRemove.size)
+            bitArray.addAll(elementsToRemove)
+            authority.addAll(elementsToRemove)
 
             // when/then
-            for (int i = 0; i < elementsToRemove.size(); i++) {
-                int nextRemoveIndex = removeIndices.get(i);
-                assertThat(bitArray.remove(nextRemoveIndex))
-                        .isEqualTo(authority.remove(nextRemoveIndex));
-            }
+            for (removeIndex in removeIndices) {
 
+                // assert same element removed
+                assertThat(bitArray.removeAt(removeIndex))
+                    .isEqualTo(authority.removeAt(removeIndex))
+
+                // and rest are unchanged
+                assertThat(bitArray).isEqualTo(authority)
+            }
         }
     }
-
 
     @Nested
     @DisplayName("Copy Tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class CopyTests {
-
+    internal inner class CopyTests {
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of copy constructor should have the same elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void copy_constructor_returns_identical_list(List<Boolean> elementsToAdd) {
+        fun `Copy constructor should return identical list`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            BitArray copy = new BitArray(bitArray);
+            val copy = BitArray(bitArray)
 
             // then
-            assertThat(copy).isEqualTo(bitArray);
+            assertThat(copy).isEqualTo(bitArray)
         }
 
-
         @ParameterizedTest(name = "{0} elements")
-        @DisplayName("Result of clone() should have the same elements")
+        @DisplayName("Result of clone should be a separate object with the same contents")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void clone_returns_identical_list(List<Boolean> elementsToAdd) {
+        fun `clone should return an independent object with the same elements`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            BitArray copy = bitArray.clone();
+            val copy = bitArray.clone()
 
             // then
-            assertThat(copy).isEqualTo(bitArray);
-        }
-
-
-        @ParameterizedTest(name = "{0} elements")
-        @DisplayName("Result of clone should be a separate object")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void clone_returns_new_Object(List<Boolean> elementsToAdd) {
-            // given
-            bitArray.addAll(elementsToAdd);
-
-            // when
-            BitArray copy = bitArray.clone();
-
-            // then
-            assertThat(copy).isNotSameAs(bitArray);
+            assertThat(copy)
+                .isEqualTo(bitArray)
+                .isNotSameAs(bitArray)
         }
     }
-
 
     @Nested
     @DisplayName("Serialization Tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class SerializationTests {
-
+    internal inner class SerializationTests {
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Serialized and immediately deserialized array should be the same as original")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        void toString_and_fromString_do_not_alter_content(List<Boolean> elementsToAdd) {
+        fun `toString and fromString should not alter contents`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            String serialized = bitArray.toString();
-            BitArray deserialized = BitArray.fromString(serialized);
+            val serialized = bitArray.toString()
+            val deserialized = BitArray.fromString(serialized)
 
             // then
-            assertThat(deserialized).isEqualTo(bitArray);
+            assertThat(deserialized).isEqualTo(bitArray)
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"[0 1]", "Size = 2, [true true]", "Size =z, [0 1]", "Size = 3, [0 1]"})
+        @ValueSource(strings = ["[0 1]", "Size = 2, [true true]", "Size =z, [0 1]", "Size = 3, [0 1]"])
         @DisplayName("Bad strings should throw specific exceptions")
-        void fromString_throws_on_bad_string(String faultyString) {
-            // when/then
-            assertThatThrownBy(() -> {
-                BitArray impossibleList = BitArray.fromString(faultyString);
-                impossibleList.add(Boolean.FALSE);
-            }).isInstanceOf(UnknownFormatConversionException.class);
+        fun `fromString should throw exception on bad strings`(faultyString: String) {
+            assertThatThrownBy {
+                val impossibleList = BitArray.fromString(faultyString)
+                impossibleList.add(java.lang.Boolean.FALSE)
+            }.isInstanceOf(IllegalFormatException::class.java)
         }
     }
-
 
     @Nested
     @DisplayName("New Method Tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class NewMethodTests {
-
+    internal inner class NewMethodTests {
         @ParameterizedTest(name = "{0} elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
-        void sumMod2_works(List<Boolean> elementsToAdd) {
+        fun `sumMod2 should be equivalent to the parity of 1s in the array`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            int sumMod2 = bitArray.sumMod2();
-            int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count() % 2;
+            val sumMod2 = bitArray.sumMod2()
+            val expectedSumMod2 = bitArray.count { it == true } % 2
 
             // then
-            printDetails(elementsToAdd.size(), expected, sumMod2);
-            assertThat(sumMod2).isEqualTo(expected);
+            printDetails(elementsToAdd.size, expectedSumMod2, sumMod2)
+            assertThat(sumMod2).isEqualTo(expectedSumMod2)
         }
 
         @ParameterizedTest(name = "{0} elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countOnes is equivalent to the number of true elements in the array")
-        void countOnes_counts_ones(List<Boolean> elementsToAdd) {
+        fun `countOnes should return number of true elements in the array`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            int ones = bitArray.countOnes();
-            int expected = (int) bitArray.stream().filter(Boolean::booleanValue).count();
+            val ones = bitArray.countOnes()
+            val expectedOnes = bitArray.count { it == true }
 
             // then
-            printDetails(elementsToAdd.size(), expected, ones);
-            assertThat(ones).isEqualTo(expected);
+            printDetails(elementsToAdd.size, expectedOnes, ones)
+            assertThat(ones).isEqualTo(expectedOnes)
         }
 
         @ParameterizedTest(name = "{0} elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countZeros is equivalent to the number of false elements in the array")
-        void countZeros_counts_zeros(List<Boolean> elementsToAdd) {
+        fun `countZeros should return number of false elements in the array`(elementsToAdd: List<Boolean>) {
             // given
-            bitArray.addAll(elementsToAdd);
+            bitArray.addAll(elementsToAdd)
 
             // when
-            int zeros = bitArray.countZeros();
-            int expected = (int) bitArray.stream().filter(Boolean.FALSE::equals).count();
+            val zeros = bitArray.countZeros()
+            val expectedZeros = bitArray.count { it == false }
 
             // then
-            printDetails(elementsToAdd.size(), expected, zeros);
-            assertThat(zeros).isEqualTo(expected);
-        }
-    }
-
-
-    @Nested
-    @DisplayName("Misc Tests")
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class MiscTests {
-
-        @ParameterizedTest(name = "{0} elements before clear")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        @DisplayName("Cleared array should be empty")
-        void clear_leaves_empty_list(List<Boolean> elementsToAdd) {
-            // given
-            bitArray.addAll(elementsToAdd);
-
-            // when
-            bitArray.clear();
-
-            // then
-            assertThat(bitArray).isEmpty();
+            printDetails(elementsToAdd.size, expectedZeros, zeros)
+            assertThat(zeros).isEqualTo(expectedZeros)
         }
     }
 
     @Nested
     @DisplayName("AbstractList implementation overrides")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class AbstractListOverridesTests {
-
-        @SuppressWarnings("SuspiciousMethodCalls")
+    internal inner class AbstractListOverridesTests {
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource({"io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
-                "io.github.abductcows.bitarray.TestUtils#allSameBooleans"})
-        @DisplayName("IndexOf should work like ArrayList's")
-        void test_indexOf(List<Boolean> elementsToAdd) {
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
+            "io.github.abductcows.bitarray.TestUtils#allSameBooleans")
+        @DisplayName("indexOf should work like ArrayList")
+        fun `indexOf should work like ArrayList`(elementsToAdd: List<Boolean>) {
             // given
-            List<Boolean> authority = new ArrayList<>(elementsToAdd);
-            bitArray.addAll(elementsToAdd);
+            val authority: List<Boolean> = ArrayList(elementsToAdd)
+            bitArray.addAll(elementsToAdd)
 
             // when
-            int firstTrue = bitArray.indexOf(Boolean.TRUE), firstFalse = bitArray.indexOf(Boolean.FALSE);
-            int expectedTrue = authority.indexOf(Boolean.TRUE), expectedFalse = authority.indexOf(Boolean.FALSE);
-            int firstInvalid = bitArray.indexOf(BitArray.class);
+            val firstTrue = bitArray.indexOf(java.lang.Boolean.TRUE)
+            val firstFalse = bitArray.indexOf(java.lang.Boolean.FALSE)
+            val expectedTrue = authority.indexOf(java.lang.Boolean.TRUE)
+            val expectedFalse = authority.indexOf(java.lang.Boolean.FALSE)
+            val firstInvalid = bitArray.indexOf(BitArray::class.java as Any)
 
             // then
-            printDetails(elementsToAdd.size(), expectedTrue, firstTrue, "first true");
-            printDetails(elementsToAdd.size(), expectedFalse, firstFalse, "first false");
-            printDetails(elementsToAdd.size(), -1, firstInvalid, "first invalid");
-            assertThat(firstTrue).isEqualTo(expectedTrue);
-            assertThat(firstFalse).isEqualTo(expectedFalse);
-            assertThat(firstInvalid).isEqualTo(-1);
+            printDetails(elementsToAdd.size, expectedTrue, firstTrue, "first true")
+            printDetails(elementsToAdd.size, expectedFalse, firstFalse, "first false")
+            printDetails(elementsToAdd.size, -1, firstInvalid, "first invalid")
+            assertThat(firstTrue).isEqualTo(expectedTrue)
+            assertThat(firstFalse).isEqualTo(expectedFalse)
+            assertThat(firstInvalid).isEqualTo(-1)
+        }
+
+        @ParameterizedTest(name = "{0} elements before clear")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
+        @DisplayName("Cleared array should be empty")
+        fun `clear leaves empty list`(elementsToAdd: List<Boolean>) {
+            // given
+            bitArray.addAll(elementsToAdd)
+
+            // when
+            bitArray.clear()
+
+            // then
+            assertThat(bitArray).isEmpty()
         }
     }
 
     @Nested
     @DisplayName("Internal methods tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class InternalMethodsTest {
-
+    internal inner class InternalMethodsTest {
         @Test
         @DisplayName("singleBitMask should work for all values 0-63")
-        void singleBitMask_does_not_fail() {
+        fun `singleBitMask should work for all values 0-63`() {
             // when
-            Set<Long> valuesSet = IntStream.rangeClosed(0, 63)
-                    .mapToLong(bitArray::singleBitMask)
-                    .boxed()
-                    .collect(Collectors.toUnmodifiableSet());
+            val values = (0..63).map { bitArray.singleBitMask(it) }
 
             // then
-            assertThat(valuesSet)
-                    .hasSize(64)
-                    .allMatch(e -> Long.bitCount(e) == 1);
+            assertThat(values)
+                .doesNotHaveDuplicates()
+                .hasSize(64)
         }
-
-
     }
 
-
-    void printDetails(int testSize, Object expected, Object actual) {
-        printDetails(testSize, expected, actual, "");
-    }
-
-    void printDetails(int testSize, Object expected, Object actual, String additionalNote) {
-        if (!additionalNote.isEmpty()) {
-            System.out.printf("%15s ", String.format("(%s)", additionalNote));
+    @JvmOverloads
+    internal fun printDetails(testSize: Int, expected: Any?, actual: Any?, additionalNote: String = "") {
+        if (additionalNote.isNotEmpty()) {
+            System.out.printf("%15s ", String.format("(%s)", additionalNote))
         }
-
-        System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual);
-
-        if (bitArray.size() <= 10) {
-            System.out.println(" | Array: " + bitArray);
+        System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual)
+        if (bitArray.size <= 10) {
+            println(" | Array: $bitArray")
         } else {
-            System.out.println();
+            println()
         }
     }
 }
