@@ -550,6 +550,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return sumMod2 % 2;
     }
 
+    /**
+     * Counts the number of {@code true} elements in the array
+     *
+     * @return number of true elements in the array
+     */
     public int countOnes() {
         if (isEmpty()) return 0;
         int oneCount = 0;
@@ -570,6 +575,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return oneCount;
     }
 
+    /**
+     * Counts the number of {@code false} elements in the array
+     *
+     * @return number of false elements in the array
+     */
     public int countZeros() {
         return size() - countOnes();
     }
