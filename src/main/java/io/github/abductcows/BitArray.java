@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -684,7 +685,21 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     @Override
     public int indexOf(Object o) {
-        return super.indexOf(o);
+        if (!(o instanceof Boolean) || isEmpty()) return -1;
+        final long indifferentLongFormat = o.equals(Boolean.FALSE) ? -1L : 0L; // if looking for True 0L longs can be skipped etc
+
+        int limit = longsRequiredForNBits(size()) - 1;
+        int firstLongIndexToCheck = IntStream.range(0, limit)
+                .filter(i -> data[i] != indifferentLongFormat)
+                .findFirst()
+                .orElse(limit);
+
+        for (int i = firstLongIndexToCheck * BITS_PER_LONG; i < elements; i++) {
+            if (o.equals(get(i))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -821,7 +836,4 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         }
     }
 
-    public static void main(String[] args) {
-
-    }
 }

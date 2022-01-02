@@ -258,7 +258,7 @@ class BitArrayTest {
 
             // when
             int zeros = bitArray.countZeros();
-            int expected = (int) bitArray.stream().filter((e) -> e == Boolean.FALSE).count();
+            int expected = (int) bitArray.stream().filter(Boolean.FALSE::equals).count();
 
             // then
             printDetails(elementsToAdd.size(), expected, zeros);
@@ -287,9 +287,47 @@ class BitArrayTest {
         }
     }
 
+    @Nested
+    @DisplayName("AbstractList implementation overrides")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class AbstractListOverridesTests {
+
+        @SuppressWarnings("SuspiciousMethodCalls")
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource({"io.github.abductcows.TestUtils#testCaseBooleans", "io.github.abductcows.TestUtils#allSameBooleans"})
+        @DisplayName("IndexOf should work like ArrayList's")
+        void test_indexOf(List<Boolean> elementsToAdd) {
+            // given
+            List<Boolean> authority = new ArrayList<>(elementsToAdd);
+            bitArray.addAll(elementsToAdd);
+
+            // when
+            int firstTrue = bitArray.indexOf(Boolean.TRUE), firstFalse = bitArray.indexOf(Boolean.FALSE);
+            int expectedTrue = authority.indexOf(Boolean.TRUE), expectedFalse = authority.indexOf(Boolean.FALSE);
+            int firstInvalid = bitArray.indexOf(BitArray.class);
+
+            // then
+            printDetails(elementsToAdd.size(), expectedTrue, firstTrue, "first true");
+            printDetails(elementsToAdd.size(), expectedFalse, firstFalse, "first false");
+            printDetails(elementsToAdd.size(), -1, firstInvalid, "first invalid");
+            assertThat(firstTrue).isEqualTo(expectedTrue);
+            assertThat(firstFalse).isEqualTo(expectedFalse);
+            assertThat(firstInvalid).isEqualTo(-1);
+        }
+    }
+
 
     void printDetails(int testSize, Object expected, Object actual) {
+        printDetails(testSize, expected, actual, "");
+    }
+
+    void printDetails(int testSize, Object expected, Object actual, String additionalNote) {
+        if (!additionalNote.isEmpty()) {
+            System.out.printf("%15s ", String.format("(%s)", additionalNote));
+        }
+
         System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual);
+
         if (bitArray.size() <= 10) {
             System.out.println(" | Array: " + bitArray);
         } else {
