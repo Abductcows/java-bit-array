@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package io.github.abductcows;
+package io.github.abductcows.bitarray;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,7 +49,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at index should behave like ArrayList")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void add_at_index_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -68,7 +68,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Add at the end should behave like ArrayList")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void add_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -86,7 +86,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Set at index should behave like ArrayList")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void set_test(List<Boolean> elementsToAdd) {
 
             // given
@@ -108,7 +108,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Remove at index should behave like ArrayList")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void remove_test(List<Boolean> elementsToRemove) {
 
             // given
@@ -135,7 +135,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of copy constructor should have the same elements")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void copy_constructor_returns_identical_list(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -150,7 +150,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of clone() should have the same elements")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void clone_returns_identical_list(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -165,7 +165,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Result of clone should be a separate object")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void clone_returns_new_Object(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -186,7 +186,7 @@ class BitArrayTest {
 
         @ParameterizedTest(name = "{0} elements")
         @DisplayName("Serialized and immediately deserialized array should be the same as original")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         void toString_and_fromString_do_not_alter_content(List<Boolean> elementsToAdd) {
             // given
             bitArray.addAll(elementsToAdd);
@@ -218,7 +218,7 @@ class BitArrayTest {
     class NewMethodTests {
 
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
         void sumMod2_works(List<Boolean> elementsToAdd) {
             // given
@@ -234,7 +234,7 @@ class BitArrayTest {
         }
 
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countOnes is equivalent to the number of true elements in the array")
         void countOnes_counts_ones(List<Boolean> elementsToAdd) {
             // given
@@ -250,7 +250,7 @@ class BitArrayTest {
         }
 
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countZeros is equivalent to the number of false elements in the array")
         void countZeros_counts_zeros(List<Boolean> elementsToAdd) {
             // given
@@ -273,7 +273,7 @@ class BitArrayTest {
     class MiscTests {
 
         @ParameterizedTest(name = "{0} elements before clear")
-        @MethodSource("io.github.abductcows.TestUtils#testCaseBooleans")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("Cleared array should be empty")
         void clear_leaves_empty_list(List<Boolean> elementsToAdd) {
             // given
@@ -294,7 +294,8 @@ class BitArrayTest {
 
         @SuppressWarnings("SuspiciousMethodCalls")
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource({"io.github.abductcows.TestUtils#testCaseBooleans", "io.github.abductcows.TestUtils#allSameBooleans"})
+        @MethodSource({"io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
+                "io.github.abductcows.bitarray.TestUtils#allSameBooleans"})
         @DisplayName("IndexOf should work like ArrayList's")
         void test_indexOf(List<Boolean> elementsToAdd) {
             // given
@@ -324,7 +325,6 @@ class BitArrayTest {
         @Test
         @DisplayName("singleBitMask should work for all values 0-63")
         void singleBitMask_does_not_fail() {
-
             // when
             Set<Long> valuesSet = IntStream.rangeClosed(0, 63)
                     .mapToLong(bitArray::singleBitMask)

@@ -1,4 +1,4 @@
-package io.github.abductcows;
+package io.github.abductcows.bitarray;
 
 import javax.annotation.Nonnull;
 import javax.annotation.meta.TypeQualifierDefault;

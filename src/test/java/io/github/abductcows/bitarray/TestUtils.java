@@ -1,4 +1,4 @@
-package io.github.abductcows;
+package io.github.abductcows.bitarray;
 
 import org.junit.jupiter.api.Named;
 

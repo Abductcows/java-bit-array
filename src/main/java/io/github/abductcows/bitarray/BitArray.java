@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package io.github.abductcows;
+package io.github.abductcows.bitarray;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
