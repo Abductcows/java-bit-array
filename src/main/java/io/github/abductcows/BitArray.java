@@ -20,8 +20,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -537,45 +535,41 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     public int sumMod2() {
         if (isEmpty()) return 0;
-
-        AtomicInteger sumMod2 = new AtomicInteger(0);
+        int sumMod2 = 0;
         int limit = longsRequiredForNBits(size()) - 1;
 
-        sumMod2.addAndGet(Long.bitCount(Arrays.stream(data)
+        sumMod2 += Long.bitCount(Arrays.stream(data)
                 .limit(limit)
-                .reduce(0L, (i, j) -> i ^ j)));
+                .reduce(0L, (i, j) -> i ^ j));
 
-        int remainingBitsIndex = size() - size() % BITS_PER_LONG;
-
-        this.listIterator(remainingBitsIndex).forEachRemaining(e -> {
-            if (e) {
-                sumMod2.incrementAndGet();
+        int remainingBitsIndex = limit * BITS_PER_LONG;
+        for (int i = remainingBitsIndex; i < elements; i++) {
+            if (get(i)) {
+                sumMod2++;
             }
-        });
+        }
 
-        return sumMod2.get() % 2;
+        return sumMod2 % 2;
     }
 
     public int countOnes() {
         if (isEmpty()) return 0;
-
-        AtomicLong sum = new AtomicLong(0L);
+        int oneCount = 0;
         int limit = longsRequiredForNBits(size()) - 1;
 
-        sum.addAndGet(Arrays.stream(data)
+        oneCount += Arrays.stream(data)
                 .limit(limit)
                 .map(Long::bitCount)
-                .sum()
-        );
+                .sum();
 
-        int remainingBitsIndex = size() - size() % BITS_PER_LONG;
-        this.listIterator(remainingBitsIndex).forEachRemaining(e -> {
-            if (e) {
-                sum.incrementAndGet();
+        int remainingBitsIndex = limit * BITS_PER_LONG;
+        for (int i = remainingBitsIndex; i < elements; i++) {
+            if (get(i)) {
+                oneCount++;
             }
-        });
+        }
 
-        return sum.intValue();
+        return oneCount;
     }
 
     public int countZeros() {
