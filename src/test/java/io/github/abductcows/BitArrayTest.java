@@ -16,17 +16,17 @@
 
 package io.github.abductcows;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UnknownFormatConversionException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -314,6 +314,30 @@ class BitArrayTest {
             assertThat(firstFalse).isEqualTo(expectedFalse);
             assertThat(firstInvalid).isEqualTo(-1);
         }
+    }
+
+    @Nested
+    @DisplayName("Internal methods tests")
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class InternalMethodsTest {
+
+        @Test
+        @DisplayName("singleBitMask should work for all values 0-63")
+        void singleBitMask_does_not_fail() {
+
+            // when
+            Set<Long> valuesSet = IntStream.rangeClosed(0, 63)
+                    .mapToLong(bitArray::singleBitMask)
+                    .boxed()
+                    .collect(Collectors.toUnmodifiableSet());
+
+            // then
+            assertThat(valuesSet)
+                    .hasSize(64)
+                    .allMatch(e -> Long.bitCount(e) == 1);
+        }
+
+
     }
 
 
