@@ -23,7 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -576,6 +575,33 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
+     * Finds the index of the first occurrence of {@code needle} by skipping multiple occurrences of {@code !needle}
+     *
+     * <p>This method should be used when {@code needle} is indeed a needle in a haystack of {@code !needle} elements.
+     * In other cases, it most likely run slower than {@link #indexOf(Object) indexOf}. It skips ahead of multiples of
+     * {@link #BITS_PER_LONG 64} starting at element 0, so 0-63, 64-127 etc, using a single {@code long} comparison for each.</p>
+     *
+     * @param needle the boolean element
+     * @return index of the first occurrence of {@code needle} or -1 if not found
+     */
+    public int indexOfNeedle(boolean needle) {
+        final long indifferentLongFormat = needle ? 0L : -1L; // if looking for True 0L longs can be skipped etc
+        int longIndex = 0;
+        int longIndexLimit = longsRequiredForNBits(size()) - 1;
+
+        while (longIndex < longIndexLimit && data[longIndex] == indifferentLongFormat) {
+            longIndex++;
+        }
+
+        for (int i = longIndex * BITS_PER_LONG; i < elements; i++) {
+            if (get(i).equals(needle)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns a deep copy of this object
      *
      * @return deep copy of {@code this}
@@ -678,21 +704,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     @Override
     public int indexOf(Object o) {
-        if (!(o instanceof Boolean) || isEmpty()) return -1;
-        final long indifferentLongFormat = o.equals(Boolean.FALSE) ? -1L : 0L; // if looking for True 0L longs can be skipped etc
-
-        int limit = longsRequiredForNBits(size()) - 1;
-        int firstLongIndexToCheck = IntStream.range(0, limit)
-                .filter(i -> data[i] != indifferentLongFormat)
-                .findFirst()
-                .orElse(limit);
-
-        for (int i = firstLongIndexToCheck * BITS_PER_LONG; i < elements; i++) {
-            if (o.equals(get(i))) {
-                return i;
-            }
-        }
-        return -1;
+        return super.indexOf(o);
     }
 
     @Override

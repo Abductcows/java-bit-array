@@ -182,7 +182,7 @@ internal class BitArrayTest {
         fun `fromString should throw exception on bad strings`(faultyString: String) {
             assertThatThrownBy {
                 val impossibleList = BitArray.fromString(faultyString)
-                impossibleList.add(java.lang.Boolean.FALSE)
+                impossibleList.add(false)
             }.isInstanceOf(IllegalFormatException::class.java)
         }
     }
@@ -238,36 +238,36 @@ internal class BitArrayTest {
             printDetails(elementsToAdd.size, expectedZeros, zeros)
             assertThat(zeros).isEqualTo(expectedZeros)
         }
+
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
+            "io.github.abductcows.bitarray.TestUtils#allSameBooleans")
+        @DisplayName("indexOfNeedle should work like ArrayList::indexOf")
+        fun `indexOfNeedle should work like ArrayList indexOf`(elementsToAdd: List<Boolean>) {
+            // given
+            val authority: List<Boolean> = ArrayList(elementsToAdd)
+            bitArray.addAll(elementsToAdd)
+
+            // when
+            val firstTrue = bitArray.indexOfNeedle(true)
+            val expectedTrue = authority.indexOf(true)
+
+            val firstFalse = bitArray.indexOfNeedle(false)
+            val expectedFalse = authority.indexOf(false)
+
+            // then
+            printDetails(elementsToAdd.size, expectedTrue, firstTrue, "first true")
+            printDetails(elementsToAdd.size, expectedFalse, firstFalse, "first false")
+            assertThat(firstTrue).isEqualTo(expectedTrue)
+            assertThat(firstFalse).isEqualTo(expectedFalse)
+        }
+
     }
 
     @Nested
     @DisplayName("AbstractList implementation overrides")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     internal inner class AbstractListOverridesTests {
-        @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
-            "io.github.abductcows.bitarray.TestUtils#allSameBooleans")
-        @DisplayName("indexOf should work like ArrayList")
-        fun `indexOf should work like ArrayList`(elementsToAdd: List<Boolean>) {
-            // given
-            val authority: List<Boolean> = ArrayList(elementsToAdd)
-            bitArray.addAll(elementsToAdd)
-
-            // when
-            val firstTrue = bitArray.indexOf(java.lang.Boolean.TRUE)
-            val firstFalse = bitArray.indexOf(java.lang.Boolean.FALSE)
-            val expectedTrue = authority.indexOf(java.lang.Boolean.TRUE)
-            val expectedFalse = authority.indexOf(java.lang.Boolean.FALSE)
-            val firstInvalid = bitArray.indexOf(BitArray::class.java as Any)
-
-            // then
-            printDetails(elementsToAdd.size, expectedTrue, firstTrue, "first true")
-            printDetails(elementsToAdd.size, expectedFalse, firstFalse, "first false")
-            printDetails(elementsToAdd.size, -1, firstInvalid, "first invalid")
-            assertThat(firstTrue).isEqualTo(expectedTrue)
-            assertThat(firstFalse).isEqualTo(expectedFalse)
-            assertThat(firstInvalid).isEqualTo(-1)
-        }
 
         @ParameterizedTest(name = "{0} elements before clear")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
