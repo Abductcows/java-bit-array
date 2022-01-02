@@ -5,22 +5,21 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 object TestUtils {
-    private const val SEED = 69L
+    private const val SEED = 1111L
     private const val BITS_PER_LONG = 64
     private val consistentRandom = Random(SEED)
     private val booleanListsElementCounts = listOf(
-        0,
-        1,
-        2,
-        3,
-        5,
-        BITS_PER_LONG - 1,
-        BITS_PER_LONG,
-        BITS_PER_LONG + 1,
-        2 * BITS_PER_LONG - 1,
-        2 * BITS_PER_LONG,
-        2 * BITS_PER_LONG + 1
-    )
+        // standard small values
+        (0..10).toList(),
+        // random values less than 64
+        listOf(23, 45, 59),
+        // values around a few multiples of 64
+        (1 * BITS_PER_LONG - 1..1 * BITS_PER_LONG + 1).toList(), // 63 - 65
+        (2 * BITS_PER_LONG - 1..2 * BITS_PER_LONG + 1).toList(), // 127 - 129
+        (3 * BITS_PER_LONG - 1..3 * BITS_PER_LONG + 1).toList(), // 191 - 193
+        // greater values not too close to multiples of 64
+        listOf(203, 230)
+    ).flatten()
 
     /**
      * Lists of boolean elements returned by [consistentRandom]

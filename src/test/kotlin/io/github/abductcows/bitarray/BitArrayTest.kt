@@ -302,12 +302,12 @@ internal class BitArrayTest {
     }
 
     @JvmOverloads
-    internal fun printDetails(testSize: Int, expected: Any?, actual: Any?, additionalNote: String = "") {
+    internal fun printDetails(testSize: Int, expected: Any, actual: Any, additionalNote: String = "") {
         if (additionalNote.isNotEmpty()) {
             System.out.printf("%15s ", String.format("(%s)", additionalNote))
         }
-        System.out.printf("Test size: %3d elements | Expected = %s, Actual = %s", testSize, expected, actual)
-        if (bitArray.size <= 10) {
+        System.out.printf("Test size: %3d elements | Expected = %4s, Actual = %4s", testSize, expected, actual)
+        if (bitArray.size <= 25) {
             println(" | Array: $bitArray")
         } else {
             println()
