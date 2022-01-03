@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * <h2>Random access List&lt;Boolean&gt; that uses a long primitive array to store its elements. Each element
  * occupies a single bit in its corresponding long</h2>
  *
- * <p>This class is superior to ArrayList in terms of CRUD performance and memory usage. Its only limitation is its
+ * <p>This class is superior to ArrayList in terms of CRUD performance and memory usage. Its limitation is its
  * inability to store {@code null} values.</p>
  *
  * <p>Read only operations such as {@link #get(int)} and iterator traversals
@@ -39,9 +39,11 @@ import java.util.stream.Stream;
  * You can find my benchmarks and their results from my machine
  * <a href=https://github.com/Abductcows/bit-array-benchmarks>here</a></p>
  *
- * <p>This class is NOT synchronized. For a synchronized version use {@link java.util.Collections.SynchronizedList}</p>
+ * <p>This class is NOT synchronized. For a synchronized version, use {@link java.util.Collections.SynchronizedList}</p><br>
  *
- * <p>Note that methods which return a copy of the elements will probably not follow the one bit per entry
+ * <h2>Caveats</h2>
+ * <p><b>No nulls.</b> As mentioned above, the array will not accept null values, and throw a {@link NullPointerException} instead.</p>
+ * <p><b>Whole list copies.</b> Note that methods which return a copy of the elements will probably not follow the one bit per entry
  * principle.
  * {@link java.util.AbstractList.SubList SubList} and
  * {@link java.util.Collections.SynchronizedList SynchronizedList}
