@@ -1,51 +1,56 @@
-# Java BitArray
+# BitArray
 
 [![Latest release][latest-release-shield]][latest-release-url]&nbsp;&nbsp;
 [![Open Issues][open-issues-shield]][open-issues-url]&nbsp;&nbsp;
 [![Contributors][contributors-shield]][contributors-url]
 
-### TL;DR: Faster List&lt;Boolean&gt; than ArrayList with the same exact behaviour. 
+### The cooler ArrayList\<Boolean\>
 - [Documentation](https://abductcows.github.io/java-bit-array/gr/geompokon/bitarray/BitArray.html) 
-- [Release](https://github.com/Abductcows/java-bit-array/releases/latest)
+- [Release](#getting-started)
 - [Benchmarks](https://github.com/Abductcows/bit-array-benchmarks)
+
 ### Motivation
-This class is a replacement for the `ArrayList<Boolean>` type when working with its `List` interface. It boasts higher performance in add, remove and set operations and requires less memory for storing the same elements. 
+This class was conceived as a replacement for the `ArrayList<Boolean>` type, when working with one of its interfaces. It boasts higher performance in CRUD operations and requires less memory to store the same elements. As its own type, it introduces new specialized methods that leverage its implementation to deliver more performance. 
 
-The BitArray is by all means an array; it is random access and all elements have contiguous indices at all times. Its behaviour is meant to be indistinguishable from ArrayList in order for programmers to be able to substitute it for the latter and benefit from its performance advantage. 
-
-### Few details
-Internally the array stores the boolean elements in an array of long primitives. These long primitives essentially form a sequence of bits; their chained bit representation in 2's complement. Boolean elements are converted to and from their bit equivalent to perform insertions, deletions etc. With the appropriate bitwise operations new elements can be added at a specific index and elements already in the array can be shifted to preserve the previous order. Thanks to this "hack", element shifting and array resizing is much cheaper, all while the elements themselves occupy less space in memory.
-
-### Thread safety
-The class is not currently thread-safe, I will look into it properly at some point. For the time being you can use `Collections.synchronizedList()`
-
-### Null values
-Unfortunately, due to the implementation I have not been able to accommodate null values in the array. Null insertions or updates will throw NullPointerException. 
+### Caveats
+- **No nulls:** The internal representation of the elements, namely the bits, have only 2 states, so null values cannot be accommodated. Null values will throw a NullPointerException. 
+- **No references to the inserted objects are retained:** This should not concern you if you are using Java ≥ 9. But if for some twisted reason you are using new Boolean objects and == comparison, the Boolean you just put in could return as a different object. If so, this class is not for you.
 
 ### Performance
-For the performance difference, check out the [benchmark repository](https://github.com/Abductcows/bit-array-benchmarks). It includes results from my runs and the benchmark files should you want to run them yourself. A TLDR version is that it gets much faster the more the elements are in add/remove. The performance difference stems wholly from resizes and moves. For example an insertion at random indices of 1000 elements with an initial capacity of 10 runs at 2x the speed. Same scenario but for 1.5M elements and the BitArray runs 13x faster. But for already resized arrays and insertions at the tail, the difference is miniscule. The numbers mentioned are quite conservative for safety. Also, it can easily handle `INTEGER.MAX_VALUE` elements, but cannot hold more. 
+For the performance difference, check out the [benchmark repository](https://github.com/Abductcows/bit-array-benchmarks). It includes results from my runs and the benchmark files should you want to run them yourself. A general rule is that the performance margin widens as elements increase. Additionally, operations which move a lot of elements such as `add()/remove()` at the head scale even better than those which don't, such as `get()/set()`. Also, it can easily handle `INTEGER.MAX_VALUE` elements, but cannot hold more. 
+
+### Thread safety / synchronization
+BitArray, being a List, is not inherently thread safe. It is also not synchronized, as it would harm performance. Synchronized access can be achieved as usual with [`Collections.synchronizedList(bitArray)`](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Collections.html#synchronizedList(java.util.List))
+
+### Few implementation details
+Internally the array stores the boolean elements in an array of `long` primitives. These primitives essentially form a sequence of bits; their chained bit representation in 2's complement. Boolean elements are converted to and from their bit equivalent (i.e. `false ⟷ 0` and `true ⟷ 1`) to perform insertions, deletions etc. With the appropriate bitwise operations new elements can be added at a specific index and elements already in the array can be shifted to preserve the previous order. Thanks to that, element shifting and array resizing is much cheaper, all while the elements themselves occupy less space in memory.
 
 # Getting Started
-You will need the class and source files. You can grab the [latest release](https://github.com/Abductcows/java-bit-array/releases/latest) (built with jdk-11) or download the project and run `mvn install` yourself. Releases contain a zip file with separate jars for classes, sources and javadoc. Include at least the class jar in your project, and you will be able to use the BitArray. Looks like you are good to go.
+You can grab the class from maven or download the files yourself from the latest [release](https://github.com/Abductcows/java-bit-array/releases/latest).
+## Maven
+```xml
+<dependency>
+    <groupId>io.github.abductcows</groupId>
+    <artifactId>bit-array</artifactId>
+    <version>2.0.0</version>
+</dependency>
+```
+
+# Project info
 
 ### Versioning
-The project uses [SemVer](https://semver.org/) for versioning.
-
-### Contributions and future of this project
-I would like to work on this project with anyone willing to contribute. My estimation of the rough priority of actions needed is:
-
-- Testing: Improve tests to enhance confidence
-- Optimizing: 'cause why not. Maybe override a few of the AbstractList's default implementations
-- New features: Not sure if there is anything to add, suggestions very welcome
-
-I would also appreciate you sharing your opinion on this class and the project as a whole. If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abductcows/java-bit-array/blob/master/CONTRIBUTING.md) for more info.
+The project uses [SemVer 2.0.0](https://semver.org/) for versioning.
 
 ### License
 This Project is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
-### Authors
-- *George Bouroutzoglou* (geompokon@csd.auth.gr)
+### Contributions and future of this project
+I would love to work on this project with anyone willing to contribute. My estimation of the remaining actions is  
 
+- Optimizing: 'cause why not. Maybe override a few of the AbstractList's default implementations
+- Add new methods, but not too many
+
+If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abductcows/java-bit-array/blob/masternCONTRIBUTING.md) for more info.
 
 [open-issues-url]: https://github.com/Abductcows/java-bit-array/issues
 [open-issues-shield]: https://img.shields.io/github/issues/abductcows/java-bit-array
