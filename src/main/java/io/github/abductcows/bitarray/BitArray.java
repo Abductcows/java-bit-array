@@ -329,6 +329,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the insertion bit in the long
      * @return bits that were shifted out due to the insertion
      */
+    @SuppressWarnings("SameParameterValue")
     private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // select the bits [indexInLong, (word end)] for the insertion
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
@@ -376,6 +377,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the first removed bit in the long
      * @return bits that were popped from the long
      */
+    @SuppressWarnings("SameParameterValue")
     private long removeAtIndexAndAppend(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
@@ -618,6 +620,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      *
      * @return deep copy of {@code this}
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Contract(" -> new")
     @Override
     public BitArray clone() {
@@ -779,11 +782,13 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return toArray(new Boolean[size()]);
     }
 
+    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(T[] a) {
         return super.toArray(a);
     }
 
+    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(IntFunction<T[]> generator) {
         return super.toArray(generator);
