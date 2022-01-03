@@ -26,8 +26,8 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 /**
- * <h2>Random access List&lt;Boolean&gt; that uses a {@code long} primitive array to store its elements. Each element
- * occupies a single bit in its corresponding {@code long}</h2>
+ * <h2>Random access List&lt;Boolean&gt; that uses a long primitive array to store its elements. Each element
+ * occupies a single bit in its corresponding long</h2>
  *
  * <p>This class is superior to ArrayList in terms of CRUD performance and memory usage. Its only limitation is its
  * inability to store {@code null} values.</p>
@@ -131,11 +131,12 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Inserts the boolean value as a bit at the argument index.
+     * Inserts the boolean value at the argument index.
      *
      * @param index array index to insert the element in
      * @param bit   the boolean value to be inserted
      * @throws IndexOutOfBoundsException if index is out of array insertion bounds
+     * @throws IllegalStateException     if array size is Integer.MAX_VALUE at the time of insertion
      */
     @Override
     public void add(int index, Boolean bit) {
@@ -160,10 +161,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Inserts the boolean value as a bit at the tail of the array
+     * Inserts the boolean value at the tail of the array.
      *
      * @param bit the boolean value to be inserted
      * @return success / failure of the add operation
+     * @throws IllegalStateException if array size is Integer.MAX_VALUE at the time of insertion
      */
     @Override
     public boolean add(Boolean bit) {
@@ -190,7 +192,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Sets the boolean value of the element at the specified index to the desired value and returns the old value.
+     * Sets the value of the element at the specified index to the desired value and returns the old value.
      *
      * @param index index of the array element to be changed
      * @param bit   the new value of the array element
@@ -213,7 +215,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Removes the bit at the specified array index.
+     * Removes and returns the element at the specified index.
      *
      * @param index index of the element
      * @return boolean value of the removed bit
@@ -588,8 +590,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Finds the index of the first occurrence of {@code needle} by skipping multiple occurrences of {@code !needle}
      *
      * <p>This method should be used when {@code needle} is indeed a needle in a haystack of {@code !needle} elements.
-     * In other cases, it most likely run slower than {@link #indexOf(Object) indexOf}. It skips ahead of multiples of
-     * {@link #BITS_PER_LONG 64} starting at element 0, so 0-63, 64-127 etc, using a single {@code long} comparison for each.</p>
+     * In other cases, it will most likely run slower than {@link #indexOf(Object) indexOf}. It skips ahead of multiples
+     * of 64, starting at element 0. Meaning it will skip 0-63, 64-127 etc, using a single {@code long} comparison for each.</p>
      *
      * @param needle the boolean element
      * @return index of the first occurrence of {@code needle} or -1 if not found
