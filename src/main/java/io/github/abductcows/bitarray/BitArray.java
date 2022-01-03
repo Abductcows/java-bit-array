@@ -60,7 +60,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Default array capacity in bit entries
      */
-    private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
+    public static final int DEFAULT_CAPACITY = BITS_PER_LONG;
 
     /**
      * Element storage
@@ -73,7 +73,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}
+     * Default constructor; sets initial capacity to {@link #DEFAULT_CAPACITY}
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
