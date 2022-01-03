@@ -143,7 +143,15 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
-                    <additionalOptions>--override-methods=summary</additionalOptions>
+                    <additionalOptions>
+                        -public
+                        --override-methods=summary
+                        -nonavbar
+                        -noindex
+                        -nohelp
+                        -notree
+                        -nodeprecatedlist
+                    </additionalOptions>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                     <level>public</level>
                     <defaultVersion>${project.version}</defaultVersion>
