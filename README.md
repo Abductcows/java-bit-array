@@ -26,8 +26,9 @@ BitArray, being a List, is not inherently thread safe. It is also not synchroniz
 Internally the array stores the boolean elements in an array of `long` primitives. These primitives essentially form a sequence of bits; their chained bit representation in 2's complement. Boolean elements are converted to and from their bit equivalent (i.e. `false ⟷ 0` and `true ⟷ 1`) to perform insertions, deletions etc. With the appropriate bitwise operations new elements can be added at a specific index and elements already in the array can be shifted to preserve the previous order. Thanks to that, element shifting and array resizing is much cheaper, all while the elements themselves occupy less space in memory.
 
 # Getting Started
-You can grab the class from maven or download the files yourself from the latest [release](https://github.com/Abductcows/java-bit-array/releases/latest).
-## Maven
+You can grab the class from Maven or download the files yourself from the latest [release](https://github.com/Abductcows/java-bit-array/releases/latest).
+
+### Maven
 ```xml
 <dependency>
     <groupId>io.github.abductcows</groupId>
