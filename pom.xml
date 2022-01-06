@@ -14,36 +14,6 @@
     <url>https://github.com/Abductcows/java-bit-array</url>
     <inceptionYear>2021</inceptionYear>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-        <kotlin.version>1.6.10</kotlin.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-        <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
-        <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
-
-        <jsr305.version>3.0.2</jsr305.version>
-        <jetbrains.annotations.version>23.0.0</jetbrains.annotations.version>
-
-        <junit5.version>5.8.2</junit5.version>
-        <assertj-core.version>3.21.0</assertj-core.version>
-    </properties>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
         <dependency>
@@ -52,7 +22,6 @@
             <version>${jsr305.version}</version>
             <scope>compile</scope>
         </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -110,7 +79,7 @@
                 </executions>
             </plugin>
 
-            <!-- Jar plugin -->
+            <!-- Jar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -187,6 +156,23 @@
         </license>
     </licenses>
 
+    <scm>
+        <connection>scm:git:git://github.com/Abductcows/java-bit-array.git</connection>
+        <developerConnection>no</developerConnection>
+        <url>https://github.com/Abductcows/java-bit-array/tree/master/</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <name>George Bouroutzoglou</name>
@@ -197,9 +183,23 @@
         </developer>
     </developers>
 
-    <scm>
-        <connection>scm:git:git://github.com/Abductcows/java-bit-array.git</connection>
-        <developerConnection>no</developerConnection>
-        <url>https://github.com/Abductcows/java-bit-array/tree/master/</url>
-    </scm>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <kotlin.version>1.6.10</kotlin.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+        <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+
+        <jsr305.version>3.0.2</jsr305.version>
+        <jetbrains.annotations.version>23.0.0</jetbrains.annotations.version>
+
+        <junit5.version>5.8.2</junit5.version>
+        <assertj-core.version>3.21.0</assertj-core.version>
+    </properties>
+
 </project>
