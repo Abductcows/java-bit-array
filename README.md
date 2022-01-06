@@ -1,8 +1,9 @@
 # BitArray
 
 [![Latest release][latest-release-shield]][latest-release-url]&nbsp;&nbsp;
-[![Open Issues][open-issues-shield]][open-issues-url]&nbsp;&nbsp;
-[![Contributors][contributors-shield]][contributors-url]
+[![Contributors][contributors-shield]][contributors-url]&nbsp;&nbsp;
+[![lgtm alerts][lgtm-alerts-shield]][lgtm-alerts-url]&nbsp;&nbsp;
+[![lgtm code quality][lgtm-quality-shield]][lgtm-quality-url]
 
 ### The cooler ArrayList\<Boolean\>
 - [Documentation](https://abductcows.github.io/java-bit-array/gr/geompokon/bitarray/BitArray.html) 
@@ -53,8 +54,10 @@ I would love to work on this project with anyone willing to contribute. My estim
 
 If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abductcows/java-bit-array/blob/masternCONTRIBUTING.md) for more info.
 
-[open-issues-url]: https://github.com/Abductcows/java-bit-array/issues
-[open-issues-shield]: https://img.shields.io/github/issues/abductcows/java-bit-array
+[lgtm-alerts-url]: https://lgtm.com/projects/g/Abductcows/java-bit-array/?mode=list
+[lgtm-alerts-shield]: https://img.shields.io/lgtm/alerts/github/abductcows/java-bit-array
+[lgtm-quality-url]: https://lgtm.com/projects/g/Abductcows/java-bit-array/?mode=list
+[lgtm-quality-shield]: https://img.shields.io/lgtm/grade/java/github/abductcows/java-bit-array
 [contributors-url]: https://github.com/Abductcows/java-bit-array/graphs/contributors
 [contributors-shield]: https://img.shields.io/github/contributors/abductcows/java-bit-array
 [latest-release-shield]: https://img.shields.io/github/v/release/abductcows/java-bit-array?sort=semver
