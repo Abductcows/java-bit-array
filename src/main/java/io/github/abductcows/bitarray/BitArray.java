@@ -49,7 +49,7 @@ import java.util.stream.Stream;
  * {@link java.util.Collections.SynchronizedList SynchronizedList}
  * are safe to use of course.</p>
  *
- * @version 1.1.1
+ * @version 2.0.0
  */
 @CustomNonNullApi
 public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
