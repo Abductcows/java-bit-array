@@ -2,8 +2,8 @@
 
 [![Latest release][latest-release-shield]][latest-release-url]&nbsp;&nbsp;
 [![Contributors][contributors-shield]][contributors-url]&nbsp;&nbsp;
-[![lgtm alerts][lgtm-alerts-shield]][lgtm-alerts-url]&nbsp;&nbsp;
-[![lgtm code quality][lgtm-quality-shield]][lgtm-quality-url]
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/Abductcows/java-bit-array.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Abductcows/java-bit-array/alerts/)&nbsp;&nbsp;
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/Abductcows/java-bit-array.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Abductcows/java-bit-array/context:java)
 
 ### The cooler ArrayList\<Boolean\>
 - [Documentation](https://abductcows.github.io/java-bit-array/gr/geompokon/bitarray/BitArray.html) 
