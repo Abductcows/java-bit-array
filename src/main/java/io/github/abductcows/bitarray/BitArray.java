@@ -14,49 +14,44 @@
    limitations under the License.
  */
 
-package gr.geompokon.bitarray;
+package io.github.abductcows.bitarray;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Contract;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /**
- * Class that models an array of {@code Booleans} with the {@link java.util.List} interface.
+ * <h2>Random access List&lt;Boolean&gt; that uses a long primitive array to store its elements. Each element
+ * occupies a single bit in its corresponding long</h2>
  *
- * <p>
- * This class was made explicitly to replace {@link java.util.ArrayList} when working with {@code Boolean} elements.
- * It aims to enhance the performance of common operations such as {@code add}, {@code remove} and {@code set} while
- * also minimizing its memory footprint.
- * </p>
+ * <p>This class is superior to ArrayList in terms of CRUD performance and memory usage. Its limitation is its
+ * inability to store {@code null} values.</p>
  *
- * <p>
- * Memory conservation and higher performance stem from the particular case of dealing with {@code Boolean} elements.
- * The array stores each boolean as its bit equivalent (0 for false and 1 for true) inside of an array of long primitives.
- * Therefore shifts of multiple elements and array copying can be done en masse, all while elements occupy less memory
- * when in storage.
- * </p>
+ * <p>Read only operations such as {@link #get(int)} and iterator traversals
+ * run at about the same time. {@link #add(Boolean) Add} and {@link #remove(int) remove} at the tail also have similar
+ * performance. The most significant gains come from element copy and move operations. This includes
+ * random index {@link #add(Boolean) add} and {@link #remove(int) remove}, array resizes etc.
+ * You can find my benchmarks and their results from my machine
+ * <a href=https://github.com/Abductcows/bit-array-benchmarks>here</a></p>
  *
- * <p>
- * A glimpse of the future:<br><br>
- * <code>
- * List&lt;Boolean&gt; elements = new ArrayList&lt;&gt;(); // rookie mistake
- * </code><br>
- * changes to:<br>
- * <code>
- * List&lt;Boolean&gt; elements = new BitArray(); // no convoluted diamond operator, superior performance
- * </code>
- * </p>
+ * <p>This class is NOT synchronized. For a synchronized version, use {@link java.util.Collections.SynchronizedList}</p><br>
  *
- * <p>
- * Note that methods that explicitly return a new {@code Collection} of the elements (other than {@code subList}) will
- * not follow the one bit per entry principle.
- * </p>
+ * <h2>Caveats</h2>
+ * <p><b>No nulls.</b> As mentioned above, the array will not accept null values, and throw a {@link NullPointerException} instead.</p>
+ * <p><b>Whole list copies.</b> Note that methods which return a copy of the elements will probably not follow the one bit per entry
+ * principle.
+ * {@link java.util.AbstractList.SubList SubList} and
+ * {@link java.util.Collections.SynchronizedList SynchronizedList}
+ * are safe to use of course.</p>
  *
- * @version 1.0.3
- * @see java.util.List
- * @see java.util.AbstractList
- * @see java.util.ArrayList
+ * @version 2.0.0
  */
+@CustomNonNullApi
 public final class BitArray extends AbstractList<Boolean> implements RandomAccess, Cloneable {
 
     /**
@@ -67,20 +62,20 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Default array capacity in bit entries
      */
-    private static final int DEFAULT_CAPACITY = BITS_PER_LONG;
+    public static final int DEFAULT_CAPACITY = BITS_PER_LONG;
 
     /**
-     * {@code long} array storing the bit entries.
+     * Element storage
      */
-    private long[] data;
+    private long[] data = {};
 
     /**
-     * Current number of bit elements in the array.
+     * Current number of elements
      */
     private int elements;
 
     /**
-     * Default constructor. Sets initial capacity to {@link #DEFAULT_CAPACITY}
+     * Default constructor; sets initial capacity to {@link #DEFAULT_CAPACITY}
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -108,22 +103,20 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param other the collection supplying the elements
      * @throws NullPointerException if the collection is null
      */
-    public BitArray(@NotNull Collection<? extends Boolean> other) {
-        Objects.requireNonNull(other);
-
+    public BitArray(Collection<? extends Boolean> other) {
         // fast copy for BitArray
         if (other instanceof BitArray) {
             BitArray otherBitArray = (BitArray) other;
             int longsToCopy = longsRequiredForNBits(otherBitArray.elements);
 
-            this.data = Arrays.copyOf(otherBitArray.data, longsToCopy);
-            this.elements = otherBitArray.elements;
+            data = Arrays.copyOf(otherBitArray.data, longsToCopy);
+            elements = otherBitArray.elements;
             return;
         }
 
         // standard copy
         initMembers(other.size());
-        this.addAll(other);
+        addAll(other);
     }
 
     /**
@@ -140,14 +133,15 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Inserts the boolean value as a bit at the argument index.
+     * Inserts the boolean value at the argument index.
      *
      * @param index array index to insert the element in
      * @param bit   the boolean value to be inserted
      * @throws IndexOutOfBoundsException if index is out of array insertion bounds
+     * @throws IllegalStateException     if array size is Integer.MAX_VALUE at the time of insertion
      */
     @Override
-    public void add(int index, @NotNull Boolean bit) {
+    public void add(int index, Boolean bit) {
         ensureIndexInRange(index, elements);
         modCount++;
         ensureCapacity();
@@ -169,13 +163,14 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Inserts the boolean value as a bit at the tail of the array
+     * Inserts the boolean value at the tail of the array.
      *
      * @param bit the boolean value to be inserted
      * @return success / failure of the add operation
+     * @throws IllegalStateException if array size is Integer.MAX_VALUE at the time of insertion
      */
     @Override
-    public boolean add(@NotNull Boolean bit) {
+    public boolean add(Boolean bit) {
         add(elements, bit);
         return true;
     }
@@ -188,7 +183,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean get(int index) {
+    public Boolean get(int index) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -199,7 +194,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Sets the boolean value of the element at the specified index to the desired value and returns the old value.
+     * Sets the value of the element at the specified index to the desired value and returns the old value.
      *
      * @param index index of the array element to be changed
      * @param bit   the new value of the array element
@@ -207,8 +202,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean set(int index, @NotNull Boolean bit) {
-        Objects.requireNonNull(bit);
+    public Boolean set(int index, Boolean bit) {
         ensureIndexInRange(index, elements - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
@@ -223,14 +217,14 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Removes the bit at the specified array index.
+     * Removes and returns the element at the specified index.
      *
      * @param index index of the element
      * @return boolean value of the removed bit
      * @throws IndexOutOfBoundsException if index is out of array bounds
      */
     @Override
-    public @NotNull Boolean remove(int index) {
+    public Boolean remove(int index) {
         ensureIndexInRange(index, elements - 1);
         modCount++;
 
@@ -308,20 +302,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Returns the bit at the location specified by the long indices.
-     *
-     * @param longIndex   index of the long in the data array
-     * @param indexInLong index of the bit in the long
-     * @return the bit at the specified location
-     */
-    private boolean getBit(int longIndex, int indexInLong) {
-        // get the bit
-        int bit = getBitInLong(data[longIndex], indexInLong);
-        // return its bool value
-        return bit != 0;
-    }
-
-    /**
      * Adds the bit at the array index and shifts every entry to its right to the right.
      *
      * @param bit         the new bit to be added
@@ -351,6 +331,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the insertion bit in the long
      * @return bits that were shifted out due to the insertion
      */
+    @SuppressWarnings("SameParameterValue")
     private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // select the bits [indexInLong, (word end)] for the insertion
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
@@ -398,6 +379,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the first removed bit in the long
      * @return bits that were popped from the long
      */
+    @SuppressWarnings("SameParameterValue")
     private long removeAtIndexAndAppend(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // get right side [indexInLong : ], can not be empty, will be shifted
         long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
@@ -420,11 +402,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Returns a long bit mask with ones only in the range [start, start + length)
+     * Selects the bits [start, start + length) from the argument long, leaving everything else at 0
      *
      * @param start  start index of the selection
-     * @param length number of set bits in the result
-     * @return bit mask covering the range specified
+     * @param length number of bits to be kept intact
+     * @return the argument long with only the selected bits preserved
      * @implSpec <p>
      * {@code start} should be in the range [0, 63]<br>
      * {@code length} should be in the range [1, 64]<br>
@@ -446,8 +428,22 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     private void ensureIndexInRange(int index, int endInclusive) {
         if (index < 0 || index > endInclusive) {
-            throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + this.size());
+            throw new IndexOutOfBoundsException("Array index " + index + " out of bounds for array size " + size());
         }
+    }
+
+    /**
+     * Returns the bit at the location specified by the long indices.
+     *
+     * @param longIndex   index of the long in the data array
+     * @param indexInLong index of the bit in the long
+     * @return the bit at the specified location
+     */
+    private boolean getBit(int longIndex, int indexInLong) {
+        // get the bit
+        int bit = getBitInLong(data[longIndex], indexInLong);
+        // return its bool value
+        return bit != 0;
     }
 
     /**
@@ -487,7 +483,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         // In case the new size is 0 (for example from calling double on a 0 capacity array)
         // set the new capacity to some default value
         if (newSize == 0) {
-            this.initMembers(DEFAULT_CAPACITY);
+            initMembers(DEFAULT_CAPACITY);
             return;
         }
         // make sure to create enough longs for new size
@@ -505,7 +501,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param bitIndex index of the bit in the long to be set
      * @return long bit mask with the specific bit set
      */
-    private long singleBitMask(int bitIndex) {
+    long singleBitMask(int bitIndex) {
         return Long.MIN_VALUE >>> bitIndex;
     }
 
@@ -525,7 +521,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Returns the smallest number of longs needed to contain {@code nBits} bits.
      *
      * @param nBits the number of bits
-     * @return ceil division of {@code nBits} with {@link #BITS_PER_LONG}
+     * @return smallest number of longs needed to contain {@code nBits} bits.
      */
     private int longsRequiredForNBits(int nBits) {
         return (int) Math.ceil(
@@ -537,10 +533,74 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     */
 
     /**
+     * Counts the number of {@code true} elements in the array
+     *
+     * @return number of true elements in the array
+     */
+    public int countOnes() {
+        if (isEmpty()) return 0;
+        int oneCount = 0;
+        int limit = longsRequiredForNBits(size()) - 1; // all full longs
+
+        for (int i = 0; i < limit; i++) {
+            oneCount += Long.bitCount(data[i]);
+        }
+
+        // last occupied long, not filled
+        int remainingBits = elements - limit * BITS_PER_LONG;
+
+        for (int i = 0; i < remainingBits; i++) {
+            if (getBit(limit, i)) {
+                oneCount++;
+            }
+        }
+
+        return oneCount;
+    }
+
+    /**
+     * Counts the number of {@code false} elements in the array
+     *
+     * @return number of false elements in the array
+     */
+    public int countZeros() {
+        return size() - countOnes();
+    }
+
+    /**
+     * Finds the index of the first occurrence of {@code needle} by skipping multiple occurrences of {@code !needle}
+     *
+     * <p>This method should be used when {@code needle} is indeed a needle in a haystack of {@code !needle} elements.
+     * In other cases, it will most likely run slower than {@link #indexOf(Object) indexOf}. It skips ahead of multiples
+     * of 64, starting at element 0. Meaning it will skip 0-63, 64-127 etc, using a single {@code long} comparison for each.</p>
+     *
+     * @param needle the boolean element
+     * @return index of the first occurrence of {@code needle} or -1 if not found
+     */
+    public int indexOfNeedle(boolean needle) {
+        final long indifferentLongFormat = needle ? 0L : -1L; // if looking for True 0L longs can be skipped etc
+        int longIndex = 0;
+        int longIndexLimit = longsRequiredForNBits(size()) - 1;
+
+        while (longIndex < longIndexLimit && data[longIndex] == indifferentLongFormat) {
+            longIndex++;
+        }
+
+        for (int i = longIndex * BITS_PER_LONG; i < elements; i++) {
+            if (get(i).equals(needle)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Returns a deep copy of this object
      *
      * @return deep copy of {@code this}
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Contract(" -> new")
     @Override
     public BitArray clone() {
         return new BitArray(this);
@@ -566,19 +626,19 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder(this.size() * 2);
+        StringBuilder s = new StringBuilder(size() * 2 + 10);
 
         // write size of the array
-        s.append("Size = ").append(this.size()).append(", ");
+        s.append("Size = ").append(size()).append(", ");
 
         // write the list of bits as 1s and 0s
         s.append('[');
-        for (int i = 0; i < this.size() - 1; i++) {
-            s.append(Boolean.compare(this.get(i), Boolean.FALSE));
+        for (int i = 0; i < size() - 1; i++) {
+            s.append(Boolean.compare(get(i), Boolean.FALSE));
             s.append(' ');
         }
         if (size() > 0) {
-            s.append(Boolean.compare(this.get(this.size() - 1), Boolean.FALSE));
+            s.append(Boolean.compare(get(size() - 1), Boolean.FALSE));
         }
         s.append(']');
 
@@ -631,4 +691,148 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
             throw new UnknownFormatConversionException("Not a valid BitArray string");
         }
     }
+
+    /*
+    Non-null overrides
+     */
+
+    @Override
+    public int indexOf(Object o) {
+        return super.indexOf(o);
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        return super.lastIndexOf(o);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends Boolean> c) {
+        return super.addAll(index, c);
+    }
+
+    @Override
+    public Iterator<Boolean> iterator() {
+        return super.iterator();
+    }
+
+    @Override
+    public ListIterator<Boolean> listIterator() {
+        return super.listIterator();
+    }
+
+    @Override
+    public ListIterator<Boolean> listIterator(int index) {
+        return super.listIterator(index);
+    }
+
+    @Override
+    public List<Boolean> subList(int fromIndex, int toIndex) {
+        return super.subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    protected void removeRange(int fromIndex, int toIndex) {
+        super.removeRange(fromIndex, toIndex);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return super.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return super.contains(o);
+    }
+
+    @Override
+    public Boolean[] toArray() {
+        return toArray(new Boolean[size()]);
+    }
+
+    @SuppressWarnings("SuspiciousToArrayCall")
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return super.toArray(a);
+    }
+
+    @SuppressWarnings("SuspiciousToArrayCall")
+    @Override
+    public <T> T[] toArray(IntFunction<T[]> generator) {
+        return super.toArray(generator);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        return super.remove(o);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        return super.containsAll(c);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends Boolean> c) {
+        return super.addAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        return super.removeAll(c);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        return super.retainAll(c);
+    }
+
+    @Override
+    public void replaceAll(UnaryOperator<Boolean> operator) {
+        super.replaceAll(operator);
+    }
+
+    @Override
+    public void sort(Comparator<? super Boolean> c) {
+        super.sort(c);
+    }
+
+    @Override
+    public Spliterator<Boolean> spliterator() {
+        return super.spliterator();
+    }
+
+    @Override
+    public boolean removeIf(Predicate<? super Boolean> filter) {
+        return super.removeIf(filter);
+    }
+
+    @Override
+    public Stream<Boolean> stream() {
+        return super.stream();
+    }
+
+    @Override
+    public Stream<Boolean> parallelStream() {
+        return super.parallelStream();
+    }
+
+    @Override
+    public void forEach(Consumer<? super Boolean> action) {
+        for (Boolean b : this) {
+            action.accept(b);
+        }
+    }
+
 }
