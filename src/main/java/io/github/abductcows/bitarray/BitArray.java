@@ -540,16 +540,17 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     public int countOnes() {
         if (isEmpty()) return 0;
         int oneCount = 0;
-        int limit = longsRequiredForNBits(size()) - 1;
+        int limit = longsRequiredForNBits(size()) - 1; // all full longs
 
-        oneCount += Arrays.stream(data)
-                .limit(limit)
-                .map(Long::bitCount)
-                .sum();
+        for (int i = 0; i < limit; i++) {
+            oneCount += Long.bitCount(data[i]);
+        }
 
-        int remainingBitsIndex = limit * BITS_PER_LONG;
-        for (int i = remainingBitsIndex; i < elements; i++) {
-            if (get(i)) {
+        // last occupied long, not filled
+        int remainingBits = elements - limit * BITS_PER_LONG;
+
+        for (int i = 0; i < remainingBits; i++) {
+            if (getBit(limit, i)) {
                 oneCount++;
             }
         }
