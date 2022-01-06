@@ -533,30 +533,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     */
 
     /**
-     * Calculates the parity of {@link Boolean#TRUE ones} in the array
-     *
-     * @return 0 or 1 if there is an even or odd number of {@link Boolean#TRUE ones} respectively
-     */
-    public int sumMod2() {
-        if (isEmpty()) return 0;
-        int sumMod2 = 0;
-        int limit = longsRequiredForNBits(size()) - 1;
-
-        sumMod2 += Long.bitCount(Arrays.stream(data)
-                .limit(limit)
-                .reduce(0L, (i, j) -> i ^ j));
-
-        int remainingBitsIndex = limit * BITS_PER_LONG;
-        for (int i = remainingBitsIndex; i < elements; i++) {
-            if (get(i)) {
-                sumMod2++;
-            }
-        }
-
-        return sumMod2 % 2;
-    }
-
-    /**
      * Counts the number of {@code true} elements in the array
      *
      * @return number of true elements in the array

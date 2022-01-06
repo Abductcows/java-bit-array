@@ -193,22 +193,6 @@ internal class BitArrayTest {
     internal inner class NewMethodTests {
         @ParameterizedTest(name = "{0} elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
-        @DisplayName("sumMod2 is equivalent to parity of 1s in the array")
-        fun `sumMod2 should be equivalent to the parity of 1s in the array`(elementsToAdd: List<Boolean>) {
-            // given
-            bitArray.addAll(elementsToAdd)
-
-            // when
-            val sumMod2 = bitArray.sumMod2()
-            val expectedSumMod2 = bitArray.count { it == true } % 2
-
-            // then
-            printDetails(elementsToAdd.size, expectedSumMod2, sumMod2)
-            assertThat(sumMod2).isEqualTo(expectedSumMod2)
-        }
-
-        @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countOnes is equivalent to the number of true elements in the array")
         fun `countOnes should return number of true elements in the array`(elementsToAdd: List<Boolean>) {
             // given
