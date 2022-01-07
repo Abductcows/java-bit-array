@@ -1,6 +1,5 @@
 # BitArray
-
-[![Latest release][latest-release-shield]][latest-release-url]&nbsp;&nbsp;
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.abductcows/bit-array.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.abductcows%22%20AND%20a:%22bit-array%22)&nbsp;&nbsp;
 [![Contributors][contributors-shield]][contributors-url]&nbsp;&nbsp;
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/Abductcows/java-bit-array.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Abductcows/java-bit-array/alerts/)&nbsp;&nbsp;
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/Abductcows/java-bit-array.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Abductcows/java-bit-array/context:java)
@@ -60,5 +59,3 @@ If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abduct
 [lgtm-quality-shield]: https://img.shields.io/lgtm/grade/java/github/abductcows/java-bit-array
 [contributors-url]: https://github.com/Abductcows/java-bit-array/graphs/contributors
 [contributors-shield]: https://img.shields.io/github/contributors/abductcows/java-bit-array
-[latest-release-shield]: https://img.shields.io/github/v/release/abductcows/java-bit-array?sort=semver
-[latest-release-url]: https://github.com/Abductcows/java-bit-array/releases/latest
