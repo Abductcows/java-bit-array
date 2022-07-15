@@ -302,7 +302,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
         // split the word on indexInLong, left side will remain the same
         long rightSide = selectAllBitsStarting(data[longIndex], indexInLong);
-        long leftSide = data[longIndex] & ~rightSide;
+        final long leftSide = data[longIndex] & ~rightSide;
 
         // pop the shifted out bits
         long rightSideShiftOut = selectLastNBits(rightSide, lastLength);
@@ -322,57 +322,43 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * @param indexInLong index of the bit in the long of the removal
      */
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
-        // start at the end and work back to current long index
         int currentLongIndex = getLongIndex(size() - 1);
         long leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
-            leftmostBit = removeAtIndexAndAppend(leftmostBit, 1, currentLongIndex--, 0);
+            leftmostBit = removeBitsFromLongAndAppend(currentLongIndex--, 0, leftmostBit, 1);
         }
-        // add the final MSB as LSB of longIndex and shift only the bits to the popped bit's right
-        removeAtIndexAndAppend(leftmostBit, 1, longIndex, indexInLong);
+        // add the final MSB as LSB of the argument long and shift ONLY the bits to the popped bit's right
+        removeBitsFromLongAndAppend(longIndex, indexInLong, leftmostBit, 1);
     }
 
     /**
-     * Removes the {@code lastLength} bits from the long specified by {@code longIndex} starting from {@code indexInLong}
-     * and then appends the same length of bits from {@code lastValue} at the end of the long.
-     *
-     * @param lastValue   bits to be appended to the long
-     * @param lastLength  length in bits of the last value
-     * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the first removed bit in the long
-     * @return bits that were popped from the long
+     * Removes the specified number of bits from the specified long starting at the given index. Then appends
+     * the same number of bits from the new bits argument at the end of the long. Popped bits are returned
      */
     @SuppressWarnings("SameParameterValue")
-    private long removeAtIndexAndAppend(long lastValue, int lastLength, int longIndex, int indexInLong) {
-        // get right side [indexInLong : ], can not be empty, will be shifted
-        long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
-        // get left side [0 : indexInLong), can be empty, will remain intact
-        long leftSide = data[longIndex] & ~rightSide;
+    private long removeBitsFromLongAndAppend(int removeLongIndex, int removeOffset, long newBits, int newBitsLength) {
+        // split the word on indexInLong, left side will remain the same
+        long rightSide = selectAllBitsStarting(data[removeLongIndex], removeOffset);
+        final long leftSide = data[removeLongIndex] & ~rightSide;
 
-        // save removed values
-        long poppedValues = selectBits(rightSide, indexInLong, lastLength) >>> (BITS_PER_LONG - indexInLong - lastLength);
+        // pop the removed values
+        long poppedValues = selectBits(rightSide, removeOffset, newBitsLength);
+        rightSide = rightSide << removeOffset + newBitsLength >>> removeOffset;
 
-        // clear copied bits and shift to the left
-        rightSide = (rightSide << indexInLong + lastLength) >>> indexInLong;
-        // append the previous bits
-        rightSide |= lastValue;
-
-        // re-join the two parts
-        data[longIndex] = leftSide ^ rightSide;
-
-        // return the popped bits
-        return poppedValues;
+        // set the new bits and return the popped bits
+        rightSide |= newBits;
+        data[removeLongIndex] = leftSide ^ rightSide;
+        int shiftToRightAlign = BITS_PER_LONG - removeOffset - newBitsLength;
+        return poppedValues >>> shiftToRightAlign;
     }
 
     /**
      * Copies the bits [start, start + length) from the argument long, leaving everything else at 0
      */
     private long selectBits(long original, int start, int length) {
-        long mask = Long.MIN_VALUE >>> start; // need at least the first bit
-        mask |= (Long.MIN_VALUE >>> start) - 1; // make everything to the right ones
-        mask &= -(Long.MIN_VALUE >>> (start + length - 1)); // make everything from end of length and forward 0
-        return original & mask;
+        long leftCleared = original << start >>> start;
+        return leftCleared >>> BITS_PER_LONG - start - length << BITS_PER_LONG - start - length;
     }
 
     private long selectAllBitsStarting(long original, int start) {
