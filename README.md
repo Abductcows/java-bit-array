@@ -51,7 +51,7 @@ I would love to work on this project with anyone willing to contribute. My estim
 - Optimizing: 'cause why not. Maybe override a few of the AbstractList's default implementations
 - Add new methods, but not too many
 
-If you want to contribute, check out [CONTRIBUTING.md](https://github.com/Abductcows/java-bit-array/blob/masternCONTRIBUTING.md) for more info.
+If you want to contribute, check out [CONTRIBUTING.md](CONTRIBUTING.md) for more info.
 
 [lgtm-alerts-url]: https://lgtm.com/projects/g/Abductcows/java-bit-array/?mode=list
 [lgtm-alerts-shield]: https://img.shields.io/lgtm/alerts/github/abductcows/java-bit-array
