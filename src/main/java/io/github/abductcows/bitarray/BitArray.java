@@ -140,8 +140,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public void add(int index, Boolean bit) {
-        ensureIndexInRange(index, elements);
-        modCount++;
+        ensureIndexInRange(index, size());
+        ++modCount;
         ensureCapacity();
 
         // get bit indices
@@ -149,15 +149,15 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int indexInLong = getIndexInLong(index);
 
         // check for append
-        if (index == elements) {
+        if (index == size()) {
             setBit(longIndex, indexInLong, bit);
-            elements = elements + 1;
+            ++elements;
             return;
         }
 
         // else insert normally
         addAndShiftAllRight(bit, longIndex, indexInLong);
-        elements = elements + 1;
+        ++elements;
     }
 
     /**
@@ -169,7 +169,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public boolean add(Boolean bit) {
-        add(elements, bit);
+        add(size(), bit);
         return true;
     }
 
@@ -182,7 +182,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public Boolean get(int index) {
-        ensureIndexInRange(index, elements - 1);
+        ensureIndexInRange(index, size() - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -201,7 +201,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public Boolean set(int index, Boolean bit) {
-        ensureIndexInRange(index, elements - 1);
+        ensureIndexInRange(index, size() - 1);
         // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
@@ -223,20 +223,16 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public Boolean remove(int index) {
-        ensureIndexInRange(index, elements - 1);
-        modCount++;
+        ensureIndexInRange(index, size() - 1);
+        ++modCount;
 
-        // get bit indices
         int longIndex = getLongIndex(index);
         int indexInLong = getIndexInLong(index);
-
-        // save the bit to be removed
         boolean removedBit = getBit(longIndex, indexInLong);
-        // remove it
+        // move the rest of the elements to the left
         removeAndShiftAllLeft(longIndex, indexInLong);
 
-        // update elements and return the removed bit
-        elements = elements - 1;
+        --elements;
         return removedBit;
     }
 
@@ -255,7 +251,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     @Override
     public void clear() {
-        modCount++;
+        ++modCount;
         initMembers(DEFAULT_CAPACITY);
     }
 
@@ -288,7 +284,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     private void addAndShiftAllRight(boolean bit, int longIndex, int indexInLong) {
         // start at current long index and work all the way to the last long
-        int maxLongIndex = getLongIndex(elements);
+        int maxLongIndex = getLongIndex(size());
         // add the bit and save the LSB that was shifted out
         int bitIntValue = Boolean.compare(bit, Boolean.FALSE);
         long rightmostBit = insertInLong(bitIntValue, 1, longIndex++, indexInLong);
@@ -337,7 +333,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     private void removeAndShiftAllLeft(int longIndex, int indexInLong) {
         // start at the end and work back to current long index
-        int currentLongIndex = getLongIndex(elements - 1);
+        int currentLongIndex = getLongIndex(size() - 1);
         long leftmostBit = 0; // dud value for first shift
         // keep adding the old MSB as LSB of the previous long index and shifting the rest to the left
         while (currentLongIndex > longIndex) {
@@ -405,11 +401,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      */
     private void ensureCapacity() {
         // check for completely full array
-        if (elements == Integer.MAX_VALUE) {
+        if (size() == Integer.MAX_VALUE) {
             throw new IllegalStateException("Cannot insert; array is completely full. Size = " + size());
         }
         // extend if currently full
-        if (elements == data.length * BITS_PER_LONG) {
+        if (size() == data.length * BITS_PER_LONG) {
             doubleSize();
         }
     }
@@ -417,7 +413,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private void doubleSize() {
         // make sure new element count does not overflow
         // we can't index more than Integer.MAX_VALUE elements through the List interface anyway
-        int newSize = (int) Math.min(2L * elements, Integer.MAX_VALUE);
+        int newSize = (int) Math.min(2L * size(), Integer.MAX_VALUE);
         resize(newSize);
     }
 
@@ -475,7 +471,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         }
 
         // last occupied long, not filled
-        int remainingBits = elements - limit * BITS_PER_LONG;
+        int remainingBits = size() - limit * BITS_PER_LONG;
 
         for (int i = 0; i < remainingBits; i++) {
             if (getBit(limit, i)) {
