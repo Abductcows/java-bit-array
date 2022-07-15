@@ -279,49 +279,39 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Adds the bit at the array index and shifts every entry to its right to the right.
      *
      * @param bit         the new bit to be added
-     * @param longIndex   index of the long of the insertion index
+     * @param longIndex   index of the insertion long in the data array
      * @param indexInLong index of the bit in the long of the insertion
      */
     private void addAndShiftAllRight(boolean bit, int longIndex, int indexInLong) {
-        // start at current long index and work all the way to the last long
-        int maxLongIndex = getLongIndex(size());
-        // add the bit and save the LSB that was shifted out
         int bitIntValue = boolToInt(bit);
-        long rightmostBit = insertInLong(bitIntValue, 1, longIndex++, indexInLong);
-        // keep inserting old LSB at 0 of next long and moving on with the new LSB
-        while (longIndex <= maxLongIndex) {
-            rightmostBit = insertInLong(rightmostBit, 1, longIndex++, 0);
+        int maxLongIndex = getLongIndex(size());
+        // insert the bit and save the LSB that was shifted out
+        long rightmostBit = insertInLong(bitIntValue, 1, longIndex, indexInLong);
+        // keep inserting old LSB at 0 of next long and move on with the new shift-out LSB
+        for (int currentLongIndex = longIndex + 1; currentLongIndex <= maxLongIndex; currentLongIndex++) {
+            rightmostBit = insertInLong(rightmostBit, 1, currentLongIndex, 0);
         }
+        // (last rightmost bit is always garbage)
     }
 
     /**
-     * Inserts the {@code lastLength} rightmost bits of lastValue in the position specified by {@code longIndex} and
-     * {@code indexInLong}, and then shifts every element with index >= {@code indexInLong} to the right. The bits that
-     * are shifted out are returned in the leftmost position
-     *
-     * @param lastValue   bits to be inserted into the long
-     * @param lastLength  length in bits of the last value
-     * @param longIndex   index of the long in the {@code data} array
-     * @param indexInLong index of the insertion bit in the long
-     * @return bits that were shifted out due to the insertion
+     * Inserts the {@code lastLength} rightmost bits of {@code lastValue} at index {@code longIndex} of the {@code indexInLong}
+     * word. The rightmost bits of the previous word that overflowed are returned.
      */
     @SuppressWarnings("SameParameterValue")
     private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
-        // select the bits [indexInLong, (word end)] for the insertion
-        long rightSide = (data[longIndex] << indexInLong) >>> indexInLong;
-        // separate the left part, this will remain intact
+        // split the word on indexInLong, left side will remain the same
+        long rightSide = selectAllBitsStarting(data[longIndex], indexInLong);
         long leftSide = data[longIndex] & ~rightSide;
 
-        // save the bits that will be shifted out
-        long rightSideShiftOut = selectBits(rightSide, BITS_PER_LONG - lastLength, lastLength);
-        // unsigned shift to the right to make space for the new bits
+        // pop the shifted out bits
+        long rightSideShiftOut = selectLastNBits(rightSide, lastLength);
         rightSide >>>= lastLength;
-        // set the new bits
-        rightSide |= lastValue << (BITS_PER_LONG - lastLength - indexInLong);
-        // re-join the two parts
-        data[longIndex] = leftSide ^ rightSide;
 
-        // return the discarded bits
+        // set the new bits and return the shift-out
+        int shiftToAlignWithSplitIndex = BITS_PER_LONG - indexInLong - lastLength;
+        rightSide |= lastValue << shiftToAlignWithSplitIndex;
+        data[longIndex] = leftSide ^ rightSide;
         return rightSideShiftOut;
     }
 
@@ -383,6 +373,14 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         mask |= (Long.MIN_VALUE >>> start) - 1; // make everything to the right ones
         mask &= -(Long.MIN_VALUE >>> (start + length - 1)); // make everything from end of length and forward 0
         return original & mask;
+    }
+
+    private long selectAllBitsStarting(long original, int start) {
+        return selectBits(original, start, BITS_PER_LONG - start);
+    }
+
+    private long selectLastNBits(long original, int length) {
+        return selectBits(original, BITS_PER_LONG - length, length);
     }
 
     /**
