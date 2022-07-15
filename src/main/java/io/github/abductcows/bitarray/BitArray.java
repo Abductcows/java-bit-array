@@ -286,10 +286,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         int bitIntValue = boolToInt(bit);
         int maxLongIndex = getLongIndex(size());
         // insert the bit and save the LSB that was shifted out
-        long rightmostBit = insertInLong(bitIntValue, 1, longIndex, indexInLong);
+        long rightmostBit = insertBitsInLong(longIndex, indexInLong, bitIntValue, 1);
         // keep inserting old LSB at 0 of next long and move on with the new shift-out LSB
         for (int currentLongIndex = longIndex + 1; currentLongIndex <= maxLongIndex; currentLongIndex++) {
-            rightmostBit = insertInLong(rightmostBit, 1, currentLongIndex, 0);
+            rightmostBit = insertBitsInLong(currentLongIndex, 0, rightmostBit, 1);
         }
         // (last rightmost bit is always garbage)
     }
@@ -299,19 +299,19 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * word. The rightmost bits of the previous word that overflowed are returned.
      */
     @SuppressWarnings("SameParameterValue")
-    private long insertInLong(long lastValue, int lastLength, int longIndex, int indexInLong) {
+    private long insertBitsInLong(int insertLongIndex, int insertOffset, long newBits, int newBitsLength) {
         // split the word on indexInLong, left side will remain the same
-        long rightSide = selectAllBitsStarting(data[longIndex], indexInLong);
-        final long leftSide = data[longIndex] & ~rightSide;
+        long rightSide = selectAllBitsStarting(data[insertLongIndex], insertOffset);
+        final long leftSide = data[insertLongIndex] & ~rightSide;
 
         // pop the shifted out bits
-        long rightSideShiftOut = selectLastNBits(rightSide, lastLength);
-        rightSide >>>= lastLength;
+        long rightSideShiftOut = selectLastNBits(rightSide, newBitsLength);
+        rightSide >>>= newBitsLength;
 
         // set the new bits and return the shift-out
-        int shiftToAlignWithSplitIndex = BITS_PER_LONG - indexInLong - lastLength;
-        rightSide |= lastValue << shiftToAlignWithSplitIndex;
-        data[longIndex] = leftSide ^ rightSide;
+        int shiftToAlignWithSplitIndex = BITS_PER_LONG - insertOffset - newBitsLength;
+        rightSide |= newBits << shiftToAlignWithSplitIndex;
+        data[insertLongIndex] = leftSide ^ rightSide;
         return rightSideShiftOut;
     }
 
