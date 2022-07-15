@@ -67,7 +67,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Element storage
      */
-    private long[] data = {};
+    private long[] data = new long[0];
 
     /**
      * Current number of elements
@@ -75,7 +75,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private int elements;
 
     /**
-     * Default constructor; sets initial capacity to {@link #DEFAULT_CAPACITY}
+     * Initialises the array to some default capacity
      */
     public BitArray() {
         this(DEFAULT_CAPACITY);
@@ -120,14 +120,12 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Initialises the array as a freshly created array. {@link #elements} should be 0 after a call to this.
+     * Initialises the array as a freshly created array. The array should not contain any elements after a call to this
      *
      * @param initialCapacity initial capacity of the array in bit entries
      */
     private void initMembers(int initialCapacity) {
-        // allocate enough longs for the number of bits required
         int sizeInLongs = longsRequiredForNBits(initialCapacity);
-        // init the array and set number of elements to 0
         data = new long[sizeInLongs];
         elements = 0;
     }
@@ -261,38 +259,18 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         initMembers(DEFAULT_CAPACITY);
     }
 
-    /**
-     * Returns the index of the long in the {@code data} array that contains the bit at {@code bitIndex}.
-     *
-     * @param bitIndex global index of the bit in the array
-     * @return index of the long housing the bit
-     */
-    private int getLongIndex(int bitIndex) {
-        return bitIndex / BITS_PER_LONG;
+    private int getLongIndex(int globalIndex) {
+        return globalIndex / BITS_PER_LONG;
     }
 
-    /**
-     * Used in conjunction with {@link #getLongIndex(int bitIndex)}. Returns the index of the bit in the long's bits.
-     *
-     * <p>
-     * Long refers to the long at the index returned by {@link #getLongIndex(int)}. Indices start counting
-     * from 0 to {@link #BITS_PER_LONG} - 1 from left to right.
-     * </p>
-     *
-     * @param bitIndex global index of the bit in the array
-     * @return index of the bit in its long
-     */
-    private int getIndexInLong(int bitIndex) {
-        return bitIndex % BITS_PER_LONG;
+    private int getIndexInLong(int globalIndex) {
+        return globalIndex % BITS_PER_LONG;
     }
 
-    /**
-     * Sets the argument bit at the location specified by the long indices.
-     *
-     * @param longIndex   index of the long in the data array
-     * @param indexInLong index of the bit in the long
-     * @param bit         new bit to replace the previous entry at that index
-     */
+    private boolean getBit(int longIndex, int indexInLong) {
+        return getBitInLong(data[longIndex], indexInLong) != 0;
+    }
+
     private void setBit(int longIndex, int indexInLong, boolean bit) {
         if (bit) {
             data[longIndex] |= singleBitMask(indexInLong);
@@ -371,7 +349,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     /**
      * Removes the {@code lastLength} bits from the long specified by {@code longIndex} starting from {@code indexInLong}
-     * and then appends the same length of bits from {@code lastValue} at the end of the long. The
+     * and then appends the same length of bits from {@code lastValue} at the end of the long.
      *
      * @param lastValue   bits to be appended to the long
      * @param lastLength  length in bits of the last value
@@ -402,29 +380,17 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Selects the bits [start, start + length) from the argument long, leaving everything else at 0
-     *
-     * @param start  start index of the selection
-     * @param length number of bits to be kept intact
-     * @return the argument long with only the selected bits preserved
-     * @implSpec <p>
-     * {@code start} should be in the range [0, 63]<br>
-     * {@code length} should be in the range [1, 64]<br>
-     * {@code start} and {@code length} should satisfy: start + length <= {@link #BITS_PER_LONG}
-     * </p>
+     * Copies the bits [start, start + length) from the argument long, leaving everything else at 0
      */
-    private long selectBits(long aLong, int start, int length) {
+    private long selectBits(long original, int start, int length) {
         long mask = Long.MIN_VALUE >>> start; // need at least the first bit
         mask |= (Long.MIN_VALUE >>> start) - 1; // make everything to the right ones
         mask &= -(Long.MIN_VALUE >>> (start + length - 1)); // make everything from end of length and forward 0
-        return aLong & mask;
+        return original & mask;
     }
 
     /**
-     * Checks for index out of bounds.
-     *
-     * @param index        index to be checked
-     * @param endInclusive last allowed value of the index
+     * Checks for index out of bounds (right inclusive).
      */
     private void ensureIndexInRange(int index, int endInclusive) {
         if (index < 0 || index > endInclusive) {
@@ -433,25 +399,9 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Returns the bit at the location specified by the long indices.
+     * Ensures that the array can store a new element. Resizes if not possible.
      *
-     * @param longIndex   index of the long in the data array
-     * @param indexInLong index of the bit in the long
-     * @return the bit at the specified location
-     */
-    private boolean getBit(int longIndex, int indexInLong) {
-        // get the bit
-        int bit = getBitInLong(data[longIndex], indexInLong);
-        // return its bool value
-        return bit != 0;
-    }
-
-    /**
-     * Extends the array size to store at least one more element.
-     *
-     * <p>
-     * Doubling of size preferred.
-     * </p>
+     * @throws IllegalStateException if the array is at max size ({@link Integer#MAX_VALUE})
      */
     private void ensureCapacity() {
         // check for completely full array
@@ -464,9 +414,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         }
     }
 
-    /**
-     * Doubles the size of the array.
-     */
     private void doubleSize() {
         // make sure new element count does not overflow
         // we can't index more than Integer.MAX_VALUE elements through the List interface anyway
@@ -474,32 +421,21 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         resize(newSize);
     }
 
-    /**
-     * Resizes the array. Number of elements is updated in case of truncation.
-     *
-     * @param newSize new size in bit entries
-     */
     private void resize(int newSize) {
-        // In case the new size is 0 (for example from calling double on a 0 capacity array)
-        // set the new capacity to some default value
+        if (newSize < 0) {
+            throw new IllegalArgumentException("Array size requested is negative: " + newSize);
+        }
         if (newSize == 0) {
             initMembers(DEFAULT_CAPACITY);
             return;
         }
-        // make sure to create enough longs for new size
         int newSizeInLongs = longsRequiredForNBits(newSize);
-
-        // copy data
         data = Arrays.copyOf(data, newSizeInLongs);
-        // if elements were truncated, update element count
         elements = Math.min(elements, newSize);
     }
 
     /**
-     * Returns a long bit mask with only one bit set to 1
-     *
-     * @param bitIndex index of the bit in the long to be set
-     * @return long bit mask with the specific bit set
+     * Returns a long bit mask with only the argument bit set to 1
      */
     long singleBitMask(int bitIndex) {
         return Long.MIN_VALUE >>> bitIndex;
@@ -507,21 +443,13 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
 
     /**
      * Returns 0 or 1 based on the value of the specified bit in the long
-     *
-     * @param theLong  the long storing the bit
-     * @param bitIndex index of the bit in the long
-     * @return integer value of the bit in the long
      */
     private int getBitInLong(long theLong, int bitIndex) {
-        // position the bit at the rightmost part and extract it
         return (int) (theLong >> (BITS_PER_LONG - 1 - bitIndex)) & 1;
     }
 
     /**
-     * Returns the smallest number of longs needed to contain {@code nBits} bits.
-     *
-     * @param nBits the number of bits
-     * @return smallest number of longs needed to contain {@code nBits} bits.
+     * Returns the smallest number of long words needed to contain {@code nBits} bits.
      */
     private int longsRequiredForNBits(int nBits) {
         return (int) Math.ceil(
@@ -595,7 +523,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Returns a deep copy of this object
+     * Creates a deep copy of this object
      *
      * @return deep copy of {@code this}
      */
