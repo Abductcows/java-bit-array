@@ -286,7 +286,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         // start at current long index and work all the way to the last long
         int maxLongIndex = getLongIndex(size());
         // add the bit and save the LSB that was shifted out
-        int bitIntValue = Boolean.compare(bit, Boolean.FALSE);
+        int bitIntValue = boolToInt(bit);
         long rightmostBit = insertInLong(bitIntValue, 1, longIndex++, indexInLong);
         // keep inserting old LSB at 0 of next long and moving on with the new LSB
         while (longIndex <= maxLongIndex) {
@@ -452,6 +452,10 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
                 (double) nBits / BITS_PER_LONG);
     }
 
+    private int boolToInt(boolean b) {
+        return b ? 1 : 0;
+    }
+
     /*
         BitArray specific methods
     */
@@ -558,11 +562,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         // write the list of bits as 1s and 0s
         s.append('[');
         for (int i = 0; i < size() - 1; i++) {
-            s.append(Boolean.compare(get(i), Boolean.FALSE));
+            s.append(boolToInt(get(i)));
             s.append(' ');
         }
         if (size() > 0) {
-            s.append(Boolean.compare(get(size() - 1), Boolean.FALSE));
+            s.append(boolToInt(get(size() - 1)));
         }
         s.append(']');
 
