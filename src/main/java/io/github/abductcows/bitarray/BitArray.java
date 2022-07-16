@@ -264,7 +264,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     private boolean getBit(int longIndex, int indexInLong) {
-        return getBitInLong(data[longIndex], indexInLong) != 0;
+        return getBitInLong(data[longIndex], indexInLong) != 0L;
     }
 
     private void setBit(int longIndex, int indexInLong, boolean bit) {
@@ -424,8 +424,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Returns 0 or 1 based on the value of the specified bit in the long
      */
-    private int getBitInLong(long theLong, int bitIndex) {
-        return (int) (theLong >> (BITS_PER_LONG - 1 - bitIndex)) & 1;
+    long getBitInLong(long theLong, int bitIndex) {
+        return theLong >> BITS_PER_LONG - 1 - bitIndex & 1L;
     }
 
     /**

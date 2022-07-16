@@ -314,9 +314,25 @@ internal class BitArrayTest {
                 }
             }
         }
+
+        @ParameterizedTest
+        @MethodSource(
+            "io.github.abductcows.bitarray.TestUtils#bitSelectionTestWords",
+            "io.github.abductcows.bitarray.TestUtils#selectBitExtraWords")
+        @DisplayName("getBitInLong should return the value of the specified bit (0 or 1)")
+        fun `getBitInLong should return the value of the specified bit (0 or 1)`(testLong: Long) {
+
+            for (index in 0 until Long.SIZE_BITS) {
+
+                val expected = if ((Long.MIN_VALUE ushr index and testLong) == 0L) 0L else 1L
+                val actual = bitArray.getBitInLong(testLong, index)
+
+                assertThat(actual)
+                    .isEqualTo(expected)
+            }
+        }
     }
 
-    @JvmOverloads
     internal fun printDetails(testSize: Int, expected: Any, actual: Any, additionalNote: String = "") {
         if (additionalNote.isNotEmpty()) {
             System.out.printf("%15s ", String.format("(%s)", additionalNote))

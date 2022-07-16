@@ -1,6 +1,7 @@
 package io.github.abductcows.bitarray
 
 import org.junit.jupiter.api.Named
+import java.lang.Long.toBinaryString
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -93,14 +94,27 @@ object TestUtils {
             .flatten()
             .map {
                 Named.named(
-                    "($it) - 0b${(java.lang.Long.toBinaryString(it))}",
+                    longFormattedToBinary(it),
                     it
                 )
             }
     }
 
     @JvmStatic
-    fun <T> synchronizedWithFreshRandom(block: () -> T): T = synchronized(consistentRandom) {
+    fun selectBitExtraWords() = listOf(
+        0b0101010101010101010101010101010101010101010101010101010101010101L,
+        0b10101010101010101010101010101010101010101010101010101010101010L
+    ).map {
+        Named.named(
+            longFormattedToBinary(it),
+            it
+        )
+    }
+
+    private fun longFormattedToBinary(long: Long) = "($long) - 0b${(toBinaryString(long))}"
+
+    @JvmStatic
+    private fun <T> synchronizedWithFreshRandom(block: () -> T): T = synchronized(consistentRandom) {
         consistentRandom.setSeed(SEED)
         block()
     }
