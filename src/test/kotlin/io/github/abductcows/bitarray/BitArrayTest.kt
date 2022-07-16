@@ -224,8 +224,10 @@ internal class BitArrayTest {
         }
 
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
-            "io.github.abductcows.bitarray.TestUtils#allSameBooleans")
+        @MethodSource(
+            "io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
+            "io.github.abductcows.bitarray.TestUtils#allSameBooleans"
+        )
         @DisplayName("indexOfNeedle should work like ArrayList::indexOf")
         fun `indexOfNeedle should work like ArrayList indexOf`(elementsToAdd: List<Boolean>) {
             // given
@@ -281,7 +283,36 @@ internal class BitArrayTest {
             // then
             assertThat(values)
                 .doesNotHaveDuplicates()
-                .hasSize(64)
+                .allMatch { it.countOneBits() == 1 }
+                .isSortedAccordingTo(Comparator.comparingInt { it.countLeadingZeroBits() })
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#bitSelectionTestWords")
+        @DisplayName("selectBits should keep the selected bits the same and leave everything else at 0")
+        fun `selectBits should keep the selected bits the same and leave everything else at 0`(testLong: Long) {
+
+            val n = Long.SIZE_BITS
+
+            for (start in 0 until n - 1) {
+                for (length in 1 until n - start) {
+
+                    var original = testLong
+                    var selection = bitArray.selectBits(testLong, start, length)
+
+                    for (bitIndex in n - 1 downTo 0) {
+                        if (bitIndex < start || bitIndex > start + length - 1) {
+                            assertThat(selection and 1L)
+                                .isEqualTo(0)
+                        } else {
+                            assertThat(selection and 1L)
+                                .isEqualTo(original and 1L)
+                        }
+                        original = original ushr 1
+                        selection = selection ushr 1
+                    }
+                }
+            }
         }
     }
 

@@ -356,7 +356,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     /**
      * Copies the bits [start, start + length) from the argument long, leaving everything else at 0
      */
-    private long selectBits(long original, int start, int length) {
+    long selectBits(long original, int start, int length) {
         long leftCleared = original << start >>> start;
         return leftCleared >>> BITS_PER_LONG - start - length << BITS_PER_LONG - start - length;
     }

@@ -42,13 +42,18 @@ object TestUtils {
     @JvmStatic
     fun allSameBooleans(): Iterable<Named<List<Boolean>>> = sequence {
         for (elementCount in booleanListsElementCounts.filter { it > 0 }) {
-            yield(Named.of(
-                "%d false".format(elementCount),
-                Collections.nCopies(elementCount, false)))
-            yield(Named.of(
-                "%d true".format(elementCount),
-                Collections.nCopies(elementCount, true)
-            ))
+            yield(
+                Named.of(
+                    "%d false".format(elementCount),
+                    Collections.nCopies(elementCount, false)
+                )
+            )
+            yield(
+                Named.of(
+                    "%d true".format(elementCount),
+                    Collections.nCopies(elementCount, true)
+                )
+            )
         }
     }.asIterable()
 
@@ -68,6 +73,30 @@ object TestUtils {
     fun getRemoveIndices(noOfElements: Int): List<Int> = synchronizedWithFreshRandom {
         val nextMax = AtomicInteger(noOfElements)
         List(noOfElements) { consistentRandom.nextInt(nextMax.getAndDecrement()) }
+    }
+
+    @JvmStatic
+    fun bitSelectionTestWords(): Iterable<Named<Long>> {
+        return listOf(
+            listOf(-1L),
+            // powers of two
+            sequence {
+                var next = Long.MIN_VALUE
+                while (next != 0L) {
+                    yield(next)
+                    next = next ushr 1
+                }
+            }.toList(),
+            listOf(0L),
+            synchronizedWithFreshRandom { List(30) { consistentRandom.nextLong() } }
+        )
+            .flatten()
+            .map {
+                Named.named(
+                    "($it) - 0b${(java.lang.Long.toBinaryString(it))}",
+                    it
+                )
+            }
     }
 
     @JvmStatic
