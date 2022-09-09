@@ -295,8 +295,8 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
-     * Inserts the {@code lastLength} rightmost bits of {@code lastValue} at index {@code longIndex} of the {@code indexInLong}
-     * word. The rightmost bits of the previous word that overflowed are returned.
+     * Inserts the {@code newBitsLength} rightmost bits of {@code newBits} at index {@code insertOffset} of the
+     * {@code insertLongIndex} data word. The rightmost bits of the previous word that overflowed are returned.
      */
     @SuppressWarnings("SameParameterValue")
     private long insertBitsInLong(int insertLongIndex, int insertOffset, long newBits, int newBitsLength) {
