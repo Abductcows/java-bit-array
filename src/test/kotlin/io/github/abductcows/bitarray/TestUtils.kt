@@ -76,6 +76,21 @@ object TestUtils {
         List(noOfElements) { consistentRandom.nextInt(nextMax.getAndDecrement()) }
     }
 
+    fun getRemoveRangeIndices(noOfElements: Int): List<Pair<Int, Int>> = synchronizedWithFreshRandom {
+        var elementsLeft = noOfElements
+
+         sequence {
+            while (elementsLeft > 1) {
+                val end = 1 + consistentRandom.nextInt(elementsLeft - 1)
+                val start = consistentRandom.nextInt(end)
+                val length = end - start
+                elementsLeft -= length
+
+                yield(start to end)
+            }
+        }.toList()
+    }
+
     @JvmStatic
     fun bitSelectionTestWords(): Iterable<Named<Long>> {
         return listOf(

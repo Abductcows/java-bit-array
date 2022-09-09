@@ -507,6 +507,55 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     /**
+     * Removes all elements in the [fromIndex, toIndex) index range in linear time.
+     *
+     * @param fromIndex index of first element to be removed
+     * @param toIndex index after last element to be removed
+     */
+    @Override
+    public void removeRange(int fromIndex, int toIndex) {
+        int elementsToMove = size() - toIndex;
+
+        int receiverLong = getLongIndex(fromIndex);
+        int receiverOffset = getIndexInLong(fromIndex);
+
+        int supplierLong = getLongIndex(toIndex);
+        int supplierOffset = getIndexInLong(toIndex);
+
+        while (elementsToMove > 0) {
+            int bitsRequested = Math.min(BITS_PER_LONG - receiverOffset, elementsToMove);
+            int bitsAvailable = Math.min(BITS_PER_LONG - supplierOffset, elementsToMove);
+            int currentMoveLength = Math.min(bitsRequested, bitsAvailable);
+
+            long dataSupplied = selectBits(data[supplierLong], supplierOffset, currentMoveLength);
+            dataSupplied = dataSupplied << supplierOffset >>> receiverOffset;
+
+            // wipe old data
+            data[receiverLong] &= ~selectBits(-1L, receiverOffset, currentMoveLength);
+            data[supplierLong] &= ~selectBits(-1L, supplierOffset, currentMoveLength);
+
+            // copy the new data
+            data[receiverLong] |= dataSupplied;
+
+            // advance pointers
+            supplierOffset += currentMoveLength;
+            if (supplierOffset >= BITS_PER_LONG) {
+                ++supplierLong;
+                supplierOffset = supplierOffset % BITS_PER_LONG;
+            }
+            receiverOffset += currentMoveLength;
+            if (receiverOffset >= BITS_PER_LONG) {
+                ++receiverLong;
+                receiverOffset = receiverOffset % BITS_PER_LONG;
+            }
+
+            elementsToMove -= currentMoveLength;
+        }
+
+        elements -= toIndex - fromIndex;
+    }
+
+    /**
      * Creates a deep copy of this object
      *
      * @return deep copy of {@code this}
@@ -651,11 +700,6 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     @Override
     public int hashCode() {
         return super.hashCode();
-    }
-
-    @Override
-    protected void removeRange(int fromIndex, int toIndex) {
-        super.removeRange(fromIndex, toIndex);
     }
 
     @Override
