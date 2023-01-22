@@ -402,9 +402,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     private void resize(int newSize) {
-        if (newSize < 0) {
-            throw new IllegalArgumentException("Array size requested is negative: " + newSize);
-        }
+        if (newSize < 0) throw new IllegalArgumentException("Array size requested is negative: " + newSize);
         if (newSize == 0) {
             initMembers(DEFAULT_CAPACITY);
             return;
@@ -432,8 +430,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Returns the smallest number of long words needed to contain {@code nBits} bits.
      */
     private int longsRequiredForNBits(int nBits) {
-        return (int) Math.ceil(
-                (double) nBits / BITS_PER_LONG);
+        return (int) ((nBits - 1L + BITS_PER_LONG) / BITS_PER_LONG);
     }
 
     private int boolToInt(boolean b) {
@@ -510,7 +507,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Removes all elements in the [fromIndex, toIndex) index range in linear time.
      *
      * @param fromIndex index of first element to be removed
-     * @param toIndex index after last element to be removed
+     * @param toIndex   index after last element to be removed
      */
     @Override
     public void removeRange(int fromIndex, int toIndex) {
