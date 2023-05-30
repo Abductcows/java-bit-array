@@ -58,6 +58,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Number of bits in a long integer
      */
     private static final int BITS_PER_LONG = 64;
+    private static final int BITS_PER_LONG_SHIFT = 6;
 
     /**
      * Default array capacity in bit entries
@@ -155,7 +156,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
             return;
         }
 
-        // else insert normally
+        // normal insertion
         addAndShiftAllRight(bit, longIndex, indexInLong);
         ++elements;
     }
@@ -256,11 +257,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     }
 
     private int getLongIndex(int globalIndex) {
-        return globalIndex / BITS_PER_LONG;
+        return globalIndex >> BITS_PER_LONG_SHIFT;
     }
 
     private int getIndexInLong(int globalIndex) {
-        return globalIndex % BITS_PER_LONG;
+        return globalIndex & BITS_PER_LONG - 1;
     }
 
     private boolean getBit(int longIndex, int indexInLong) {
@@ -302,7 +303,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private long insertBitsInLong(int insertLongIndex, int insertOffset, long newBits, int newBitsLength) {
         // split the word on indexInLong, left side will remain the same
         long rightSide = selectAllBitsStarting(data[insertLongIndex], insertOffset);
-        final long leftSide = data[insertLongIndex] & ~rightSide;
+        final long leftSide = data[insertLongIndex] ^ rightSide;
 
         // pop the shifted out bits
         long rightSideShiftOut = selectLastNBits(rightSide, newBitsLength);
@@ -340,7 +341,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
     private long removeBitsFromLongAndAppend(int removeLongIndex, int removeOffset, long newBits, int newBitsLength) {
         // split the word on indexInLong, left side will remain the same
         long rightSide = selectAllBitsStarting(data[removeLongIndex], removeOffset);
-        final long leftSide = data[removeLongIndex] & ~rightSide;
+        final long leftSide = data[removeLongIndex] ^ rightSide;
 
         // pop the removed values
         long poppedValues = selectBits(rightSide, removeOffset, newBitsLength);
@@ -430,7 +431,7 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
      * Returns the smallest number of long words needed to contain {@code nBits} bits.
      */
     private int longsRequiredForNBits(int nBits) {
-        return (int) ((nBits - 1L + BITS_PER_LONG) / BITS_PER_LONG);
+        return (int) ((nBits - 1L + BITS_PER_LONG) >> BITS_PER_LONG_SHIFT);
     }
 
     private int boolToInt(boolean b) {
@@ -531,19 +532,19 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
             data[receiverLong] &= ~selectBits(-1L, receiverOffset, currentMoveLength);
             data[supplierLong] &= ~selectBits(-1L, supplierOffset, currentMoveLength);
 
-            // copy the new data
+            // copy new data
             data[receiverLong] |= dataSupplied;
 
             // advance pointers
             supplierOffset += currentMoveLength;
             if (supplierOffset >= BITS_PER_LONG) {
                 ++supplierLong;
-                supplierOffset = supplierOffset % BITS_PER_LONG;
+                supplierOffset -= BITS_PER_LONG;
             }
             receiverOffset += currentMoveLength;
             if (receiverOffset >= BITS_PER_LONG) {
                 ++receiverLong;
-                receiverOffset = receiverOffset % BITS_PER_LONG;
+                receiverOffset -= BITS_PER_LONG;
             }
 
             elementsToMove -= currentMoveLength;
@@ -714,13 +715,11 @@ public final class BitArray extends AbstractList<Boolean> implements RandomAcces
         return toArray(new Boolean[size()]);
     }
 
-    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(T[] a) {
         return super.toArray(a);
     }
 
-    @SuppressWarnings("SuspiciousToArrayCall")
     @Override
     public <T> T[] toArray(IntFunction<T[]> generator) {
         return super.toArray(generator);
