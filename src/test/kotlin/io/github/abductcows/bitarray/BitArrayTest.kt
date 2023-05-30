@@ -17,6 +17,7 @@ package io.github.abductcows.bitarray
 
 import io.github.abductcows.bitarray.TestUtils.getAddIndices
 import io.github.abductcows.bitarray.TestUtils.getRemoveIndices
+import io.github.abductcows.bitarray.TestUtils.getRemoveRangeIndices
 import io.github.abductcows.bitarray.TestUtils.getSetIndices
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -191,6 +192,32 @@ internal class BitArrayTest {
     @DisplayName("New Method Tests")
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     internal inner class NewMethodTests {
+
+        @ParameterizedTest(name = "{0} elements")
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
+        @DisplayName("removeRange should remove all elements from start to end exclusive")
+        fun `removeRange should remove all elements from start to end exclusive`(elementsToAdd: List<Boolean>) {
+
+            // given
+            var authority: MutableList<Boolean> = ArrayList(elementsToAdd)
+            bitArray.addAll(elementsToAdd)
+
+            val removeRangeIndices = getRemoveRangeIndices(bitArray.size)
+            println(removeRangeIndices)
+            // when/then
+            for ((start, end) in removeRangeIndices) {
+                authority = authority.filterIndexed { index, _ ->
+                    index !in (start until end)
+                }.toMutableList()
+                bitArray.removeRange(start, end)
+
+                assertThat(bitArray).isEqualTo(authority)
+                println(bitArray)
+                println(authority)
+                println()
+            }
+        }
+
         @ParameterizedTest(name = "{0} elements")
         @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans")
         @DisplayName("countOnes is equivalent to the number of true elements in the array")
@@ -224,8 +251,10 @@ internal class BitArrayTest {
         }
 
         @ParameterizedTest(name = "{0} elements")
-        @MethodSource("io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
-            "io.github.abductcows.bitarray.TestUtils#allSameBooleans")
+        @MethodSource(
+            "io.github.abductcows.bitarray.TestUtils#testCaseBooleans",
+            "io.github.abductcows.bitarray.TestUtils#allSameBooleans"
+        )
         @DisplayName("indexOfNeedle should work like ArrayList::indexOf")
         fun `indexOfNeedle should work like ArrayList indexOf`(elementsToAdd: List<Boolean>) {
             // given
@@ -281,11 +310,57 @@ internal class BitArrayTest {
             // then
             assertThat(values)
                 .doesNotHaveDuplicates()
-                .hasSize(64)
+                .allMatch { it.countOneBits() == 1 }
+                .isSortedAccordingTo(Comparator.comparingInt { it.countLeadingZeroBits() })
+        }
+
+        @ParameterizedTest
+        @MethodSource("io.github.abductcows.bitarray.TestUtils#bitSelectionTestWords")
+        @DisplayName("selectBits should keep the selected bits the same and leave everything else at 0")
+        fun `selectBits should keep the selected bits the same and leave everything else at 0`(testLong: Long) {
+
+            val n = Long.SIZE_BITS
+
+            for (start in 0 until n - 1) {
+                for (length in 1 until n - start) {
+
+                    var original = testLong
+                    var selection = bitArray.selectBits(testLong, start, length)
+
+                    for (bitIndex in n - 1 downTo 0) {
+                        if (bitIndex < start || bitIndex > start + length - 1) {
+                            assertThat(selection and 1L)
+                                .isEqualTo(0)
+                        } else {
+                            assertThat(selection and 1L)
+                                .isEqualTo(original and 1L)
+                        }
+                        original = original ushr 1
+                        selection = selection ushr 1
+                    }
+                }
+            }
+        }
+
+        @ParameterizedTest
+        @MethodSource(
+            "io.github.abductcows.bitarray.TestUtils#bitSelectionTestWords",
+            "io.github.abductcows.bitarray.TestUtils#selectBitExtraWords"
+        )
+        @DisplayName("getBitInLong should return the value of the specified bit (0 or 1)")
+        fun `getBitInLong should return the value of the specified bit (0 or 1)`(testLong: Long) {
+
+            for (index in 0 until Long.SIZE_BITS) {
+
+                val expected = if ((Long.MIN_VALUE ushr index and testLong) == 0L) 0L else 1L
+                val actual = bitArray.getBitInLong(testLong, index)
+
+                assertThat(actual)
+                    .isEqualTo(expected)
+            }
         }
     }
 
-    @JvmOverloads
     internal fun printDetails(testSize: Int, expected: Any, actual: Any, additionalNote: String = "") {
         if (additionalNote.isNotEmpty()) {
             System.out.printf("%15s ", String.format("(%s)", additionalNote))

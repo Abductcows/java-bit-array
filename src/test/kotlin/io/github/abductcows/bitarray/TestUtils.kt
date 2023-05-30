@@ -1,6 +1,7 @@
 package io.github.abductcows.bitarray
 
 import org.junit.jupiter.api.Named
+import java.lang.Long.toBinaryString
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -42,13 +43,18 @@ object TestUtils {
     @JvmStatic
     fun allSameBooleans(): Iterable<Named<List<Boolean>>> = sequence {
         for (elementCount in booleanListsElementCounts.filter { it > 0 }) {
-            yield(Named.of(
-                "%d false".format(elementCount),
-                Collections.nCopies(elementCount, false)))
-            yield(Named.of(
-                "%d true".format(elementCount),
-                Collections.nCopies(elementCount, true)
-            ))
+            yield(
+                Named.of(
+                    "%d false".format(elementCount),
+                    Collections.nCopies(elementCount, false)
+                )
+            )
+            yield(
+                Named.of(
+                    "%d true".format(elementCount),
+                    Collections.nCopies(elementCount, true)
+                )
+            )
         }
     }.asIterable()
 
@@ -70,8 +76,60 @@ object TestUtils {
         List(noOfElements) { consistentRandom.nextInt(nextMax.getAndDecrement()) }
     }
 
+    fun getRemoveRangeIndices(noOfElements: Int): List<Pair<Int, Int>> = synchronizedWithFreshRandom {
+        var elementsLeft = noOfElements
+
+         sequence {
+            while (elementsLeft > 1) {
+                val end = 1 + consistentRandom.nextInt(elementsLeft - 1)
+                val start = consistentRandom.nextInt(end)
+                val length = end - start
+                elementsLeft -= length
+
+                yield(start to end)
+            }
+        }.toList()
+    }
+
     @JvmStatic
-    fun <T> synchronizedWithFreshRandom(block: () -> T): T = synchronized(consistentRandom) {
+    fun bitSelectionTestWords(): Iterable<Named<Long>> {
+        return listOf(
+            listOf(-1L),
+            // powers of two
+            sequence {
+                var next = Long.MIN_VALUE
+                while (next != 0L) {
+                    yield(next)
+                    next = next ushr 1
+                }
+            }.toList(),
+            listOf(0L),
+            synchronizedWithFreshRandom { List(30) { consistentRandom.nextLong() } }
+        )
+            .flatten()
+            .map {
+                Named.named(
+                    longFormattedToBinary(it),
+                    it
+                )
+            }
+    }
+
+    @JvmStatic
+    fun selectBitExtraWords() = listOf(
+        0b0101010101010101010101010101010101010101010101010101010101010101L,
+        0b10101010101010101010101010101010101010101010101010101010101010L
+    ).map {
+        Named.named(
+            longFormattedToBinary(it),
+            it
+        )
+    }
+
+    private fun longFormattedToBinary(long: Long) = "($long) - 0b${(toBinaryString(long))}"
+
+    @JvmStatic
+    private fun <T> synchronizedWithFreshRandom(block: () -> T): T = synchronized(consistentRandom) {
         consistentRandom.setSeed(SEED)
         block()
     }

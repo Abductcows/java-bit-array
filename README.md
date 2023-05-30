@@ -5,7 +5,7 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/Abductcows/java-bit-array.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Abductcows/java-bit-array/context:java)
 
 ### The cooler ArrayList\<Boolean\>
-- [Documentation](https://abductcows.github.io/java-bit-array/gr/geompokon/bitarray/BitArray.html) 
+- [Documentation](https://abductcows.github.io/java-bit-array/io/github/abductcows/bitarray/BitArray.html) 
 - [Release](#getting-started)
 - [Benchmarks](https://github.com/Abductcows/bit-array-benchmarks)
 

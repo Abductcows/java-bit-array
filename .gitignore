@@ -1,5 +1,6 @@
 *
 !src/**
-!test/**
+!src/test/kotlin/io/github/abductcows/bitarray/**
+!src/test/kotlin/io/github/abductcows/bitarray/benchmarks/*
 !pom.xml
 !.gitignore
